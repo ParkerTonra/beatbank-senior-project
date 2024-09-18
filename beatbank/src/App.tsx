@@ -28,7 +28,7 @@ function App() {
   return (
     <div className="container">
       <h1>Welcome to Beatbank!</h1>
-      <button onClick={handleFileUpload}>Select Audio File</button>
+      <button onClick={handleFileUpload}>Upload a beat</button>
       {selectedFile && (
         <p>Selected file: {selectedFile}</p>
       )}
