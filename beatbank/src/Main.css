@@ -1,0 +1,94 @@
+/* Tailwind CSS */
+@import '../node_modules/tailwindcss/base.css';
+@import '../node_modules/tailwindcss/components.css';
+@import '../node_modules/tailwindcss/utilities.css';
+
+
+/* Your custom styles */
+@layer base {
+  
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+    scrollbar-gutter: stable both-edges;
+    @apply bg-gray-800;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #fffffe;
+    padding: 18px;
+    padding-bottom: 26px;
+  }
+
+  h1 {
+    font-size: 2.2rem;
+  }
+}
+
+@layer components {
+  .icon {
+    width: 96px;
+    height: 96px;
+    margin-top: auto;
+    margin-bottom: 28px;
+  }
+
+  .resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: col-resize;
+    user-select: none;
+    touch-action: none;
+  }
+  
+  .resizer.isResizing {
+    background: rgba(119, 0, 255, 0.315);
+    opacity: 1;
+  }
+  
+  @media (hover: hover) {
+    .resizer {
+      opacity: 0;
+    }
+  
+    *:hover > .resizer {
+      opacity: 1;
+    }
+  }
+
+  button {
+    @apply font-sans text-base font-normal text-white bg-purple-600 rounded cursor-pointer shadow-md transition-colors duration-300 px-2.5 py-2;
+  }
+
+  button:focus {
+    @apply outline-none;
+  }
+
+  input, select, textarea {
+    @apply text-base leading-normal w-full p-1.5;
+  }
+
+  /* // make the sliders look nice */
+  input[type="range"] {
+    @apply appearance-none bg-gray-200 rounded-full p-0 opacity-15;
+  }
+
+  /* make the scrollbars look nice */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2 ;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-200 rounded-full opacity-15;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 rounded-full opacity-15;
+  }
+  
+
+}
