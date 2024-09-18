@@ -16,6 +16,7 @@ function App() {
         }]
       });
       
+      //TODO: TS error
       if (filePath) {
         setSelectedFile(filePath);
         console.log("Selected file:", filePath);
