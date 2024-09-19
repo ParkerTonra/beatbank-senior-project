@@ -44,26 +44,22 @@ Ensure you have the following installed on your system:
 
 2. **Install dependencies:**
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Run the Development Server:**
    ```bash
-   npm run tauri dev
+   pnpm tauri dev
    ```
 4. ***Optional*: Build for production (Windows only)**
    ```bash
-   npm run tauri build
+   pnpm tauri build
    ```
    After the build process completes, an .exe file will be generated in the src-tauri/target/release directory of your project.
+  
 
-# 🤝 Contributing
-This is currently a solo project, but I welcome contributions! If you encounter a bug, have a feature request, or want to improve Beatbank, feel free to open an issue or submit a pull request.
 
-# 📝 License
-Beatbank is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
-
-TODO
+TODO/ideas
 style cleanup + buttons
 TODO:
 - [] add songs to set with button
@@ -73,3 +69,9 @@ TODO:
   ideas:
 - Allow users to star sets to prioritize favs/ones being worked on.
 - BeatSet page has multiple tabs / ways to look at the set
+
+
+## 📝 Changelog
+**Tauri:** Initialized a new tauri project with a splash screen & file input.
+**tailwind:** added tailwind CSS
+**diesel:** added diesel as a rust dependency for ORM
