@@ -17,6 +17,7 @@ use crate::schema::beats;
 
 #[derive(Queryable, Selectable, Serialize)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+#[diesel(table_name = beats)]
 pub struct Beat {
     pub id: i32,
     pub title: String,
@@ -36,7 +37,7 @@ pub struct Beat {
 }
 
 #[derive(Insertable)]
-#[table_name = "beats"]
+#[diesel(table_name = beats)]
 pub struct NewBeat<'a> {
     pub title: &'a str,
     pub artist: &'a str,
