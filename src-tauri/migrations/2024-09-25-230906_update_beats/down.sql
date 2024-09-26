@@ -1,5 +1,5 @@
 -- This file should undo anything in `up.sql`
-DROP TABLE beats;
+DROP TABLE IF EXISTS beats;
 
 CREATE TABLE beats (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
