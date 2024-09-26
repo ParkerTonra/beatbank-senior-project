@@ -16,8 +16,8 @@ use serde::Serialize;
 use crate::schema::beats;
 
 #[derive(Queryable, Selectable, Serialize)]
+#[diesel(table_name = crate::schema::beats)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
-#[diesel(table_name = beats)]
 pub struct Beat {
     pub id: i32,
     pub title: String,

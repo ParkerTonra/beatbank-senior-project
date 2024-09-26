@@ -1,12 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod models;
-mod schema;
+pub mod models;
+pub mod schema;
 
 use crate::models::Beat;
 use diesel::prelude::*;
-use diesel::sqlite::SqliteConnection;
 use dotenvy::dotenv;
 use serde_json;
 use std::env;
