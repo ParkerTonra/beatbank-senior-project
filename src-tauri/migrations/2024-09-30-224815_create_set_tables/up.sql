@@ -2,7 +2,6 @@
 
 CREATE TABLE beat_collection (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    title VARCHAR NOT NULL,
     set_name VARCHAR NOT NULL,
     venue VARCHAR,
     city VARCHAR,

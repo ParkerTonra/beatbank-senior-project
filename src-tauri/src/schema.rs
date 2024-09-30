@@ -3,7 +3,6 @@
 diesel::table! {
     beat_collection (id) {
         id -> Integer,
-        title -> Text,
         set_name -> Text,
         venue -> Nullable<Text>,
         city -> Nullable<Text>,
