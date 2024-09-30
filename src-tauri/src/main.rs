@@ -1,15 +1,22 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-pub mod models;
-pub mod schema;
+mod db;
+mod models;
+mod schema;
 
-use crate::models::Beat;
 use diesel::prelude::*;
-use dotenvy::dotenv;
+use models::NewBeat;
 use serde_json;
-use std::env;
+use std::{env, sync::Mutex};
+use tauri::State;
+use crate::models::Beat;
+use crate::schema::beats;
 
+// Struct to hold the Database connection
+struct AppState {
+    conn: Mutex<SqliteConnection>,
+}
 
 
 #[tauri::command]
@@ -18,9 +25,9 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn fetch_beats() -> Result<String, String> {
-    let conn = &mut establish_connection();
-    match get_all_beats(conn) {
+fn fetch_beats(state: State<AppState>) -> Result<String, String> {
+    let mut conn = state.conn.lock().unwrap();
+    match get_all_beats(&mut *conn) {
         Ok(beats) => serde_json::to_string(&beats).map_err(|e| e.to_string()),
         Err(e) => Err(e.to_string()),
     }
@@ -34,20 +41,38 @@ fn get_all_beats(conn: &mut SqliteConnection) -> QueryResult<Vec<Beat>> {
 #[tauri::command]
 fn fetch_column_vis() -> String {
     println!("Fetching column visibility...");
-    // TODO: Implement fetching column visibility from database
     String::from("{}")
 }
 
-pub fn establish_connection() -> SqliteConnection {
-    dotenv().ok();
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    SqliteConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
+#[tauri::command]
+fn add_beat(
+    state: State<AppState>,
+    title: String,
+    file_path: String,
+) -> Result<String, String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    match db::add_beat(&mut *conn, &title, &file_path) {
+        Ok(new_beat) => {
+            println!("New beat added with id: {}", new_beat.id);
+            Ok(format!("New beat added with id: {}", new_beat.id))
+        },
+        Err(e) => Err(e.to_string()),
+    }
 }
+
 
 fn main() {
     println!("Starting beatbank...");
+
+    let conn = db::establish_connection();
+    println!("Connection established!");
+
+    let app_state = AppState {
+        conn: Mutex::new(conn),
+    };
+
     tauri::Builder::default()
+        .manage(app_state)
         .invoke_handler(tauri::generate_handler![greet, fetch_beats, fetch_column_vis])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

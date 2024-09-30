@@ -4,7 +4,7 @@ diesel::table! {
     beats (id) {
         id -> Integer,
         title -> Text,
-        artist -> Text,
+        artist -> Nullable<Text>,
         album -> Nullable<Text>,
         genre -> Nullable<Text>,
         year -> Nullable<Integer>,

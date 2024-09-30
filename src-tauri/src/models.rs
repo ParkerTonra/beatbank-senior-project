@@ -10,18 +10,18 @@ Structs here will enable Diesel ORM to make efficient database operations.
 Note: To create the database with current schema, models, and migrations,
 use the following command in terminal: diesel migration run
 -----------------------------------------------------*/
-
+use super::schema::beats;
 use diesel::prelude::*;
-use serde::Serialize;
-use crate::schema::beats;
 
-#[derive(Queryable, Selectable, Serialize)]
+
+#[derive(Queryable, Selectable, Debug)]
 #[diesel(table_name = crate::schema::beats)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+#[derive(serde::Serialize)]
 pub struct Beat {
     pub id: i32,
     pub title: String,
-    pub artist: String,
+    pub artist: Option<String>,
     pub album: Option<String>,
     pub genre: Option<String>,
     pub year: Option<i32>,
@@ -37,10 +37,10 @@ pub struct Beat {
 }
 
 #[derive(Insertable)]
-#[diesel(table_name = beats)]
+#[diesel(table_name = crate::schema::beats)]
 pub struct NewBeat<'a> {
     pub title: &'a str,
-    pub artist: &'a str,
+    pub artist: Option<&'a str>,
     pub album: Option<&'a str>,
     pub genre: Option<&'a str>,
     pub year: Option<i32>,
