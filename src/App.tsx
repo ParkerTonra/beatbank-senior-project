@@ -59,7 +59,7 @@ function App() {
   return (
     <div className="container">
       <h1>Welcome to Beatbank!</h1>
-      <UploadBeat fetchData={fetchData}/>
+      <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat}/>
       <BeatTable
         beats={beats}
         onBeatPlay={handleBeatPlay}

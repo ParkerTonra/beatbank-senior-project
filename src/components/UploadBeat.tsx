@@ -1,15 +1,37 @@
 import { open } from '@tauri-apps/api/dialog';
 import { invoke } from '@tauri-apps/api/tauri';
 import { useState } from 'react';
+import { Beat } from './../bindings';
 
 interface UploadBeatProps {
   fetchData: () => void;
+  selectedBeat: Beat | null;
 }
 
-const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData }) => {
+
+
+const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [uploadStatus, setUploadStatus] = useState<string>('');
 
+  const handleFileDelete = async () => {
+    console.log("handleFileDelete");
+    if (!selectedBeat) {
+      console.log("No beat selected");
+      setUploadStatus("No beat selected");
+      return;
+    }
+    try {
+      const result = await invoke('delete_beat', { id: selectedBeat.id });
+      console.log(result);
+      fetchData();
+      setUploadStatus(prevStatus => prevStatus + `\n${result}`);
+  } catch (error) {
+      console.error("Error deleting beat:", error);
+      setUploadStatus(prevStatus => prevStatus + `\nError deleting beat: ${error}`);
+    }
+  };
+  
   const handleFileUpload = async () => {
     try {
       const filePaths = await open({
@@ -51,6 +73,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData }) => {
   return (
     <div>
       <button onClick={handleFileUpload}>Upload a beat</button>
+      <button onClick={handleFileDelete}>Delete</button>
       {selectedFiles.length > 0 && (
         <div>
           <p>Selected files:</p>
