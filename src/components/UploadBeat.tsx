@@ -1,14 +1,18 @@
-
 import { open } from '@tauri-apps/api/dialog';
+import { invoke } from '@tauri-apps/api/tauri';
 import { useState } from 'react';
 
-export const UploadBeat = () => {
+interface UploadBeatProps {
+  fetchData: () => void;
+}
 
-const [selectedFile, setSelectedFile] = useState<string | string[] | null>(null);
+const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData }) => {
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [uploadStatus, setUploadStatus] = useState<string>('');
 
   const handleFileUpload = async () => {
     try {
-      const filePath = await open({
+      const filePaths = await open({
         directory: false,
         multiple: true,
         filters: [{
@@ -17,23 +21,54 @@ const [selectedFile, setSelectedFile] = useState<string | string[] | null>(null)
         }]
       });
 
-      if (filePath) {
-        // if just one file is selected, setSelectedFile to that file, otherwise make a string array of all the files
-        setSelectedFile(filePath);
-        console.log("Selected file:", filePath);
+      if (filePaths && filePaths.length > 0) {
+        setSelectedFiles(Array.isArray(filePaths) ? filePaths : [filePaths]);
+        console.log("Selected files:", filePaths);
+
+        // Upload each file
+        for (const filePath of (Array.isArray(filePaths) ? filePaths : [filePaths])) {
+          try {
+            const result = await invoke('add_beat', {
+              title: filePath.split('/').pop() || 'Unknown', // Use filename as title
+              filePath: filePath,
+            });
+            console.log(result);
+            fetchData();
+            setUploadStatus(prevStatus => prevStatus + `\n${result}`);
+          } catch (error) {
+            console.error("Error adding beat:", error);
+            setUploadStatus(prevStatus => prevStatus + `\nError uploading ${filePath}: ${error}`);
+          }
+        }
       }
     } catch (error) {
       console.error("Error selecting file:", error);
+      setUploadStatus(`Error selecting file: ${error}`);
     }
   };
+  
 
-
-    return (
+  return (
+    <div>
+      <button onClick={handleFileUpload}>Upload a beat</button>
+      {selectedFiles.length > 0 && (
         <div>
-            <button onClick={handleFileUpload}>Upload a beat</button>
-            {selectedFile && <p>Selected file: {selectedFile}</p>}
+          <p>Selected files:</p>
+          <ul>
+            {selectedFiles.map((file, index) => (
+              <li key={index}>{file}</li>
+            ))}
+          </ul>
         </div>
-    )
-}
+      )}
+      {uploadStatus && (
+        <div>
+          <p>Upload Status:</p>
+          <pre>{uploadStatus}</pre>
+        </div>
+      )}
+    </div>
+  );
+};
 
-export default UploadBeat
+export default UploadBeat;

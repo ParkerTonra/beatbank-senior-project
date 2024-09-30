@@ -4,7 +4,7 @@ import { Beat } from "./bindings";
 import "./App.css";
 import "./Main.css";
 import { SplashScreen } from "./components/SplashScreen";
-import { UploadBeat } from "./components/UploadBeat";
+import UploadBeat from "./components/UploadBeat";
 import BeatTable from "./components/BeatTable";
 import { useBeats } from "./hooks/useBeats";
 
@@ -59,6 +59,7 @@ function App() {
   return (
     <div className="container">
       <h1>Welcome to Beatbank!</h1>
+      <UploadBeat fetchData={fetchData}/>
       <BeatTable
         beats={beats}
         onBeatPlay={handleBeatPlay}
@@ -72,7 +73,7 @@ function App() {
         columnVisibility={columnVisibility}
         setColumnVisibility={setColumnVisibility}
       />
-      <UploadBeat />
+      
     </div>
   );
 }
