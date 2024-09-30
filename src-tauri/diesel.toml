@@ -8,4 +8,4 @@ file = "src/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]
-dir = "src-tauri/migrations"
+dir = "migrations"
