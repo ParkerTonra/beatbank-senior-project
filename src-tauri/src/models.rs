@@ -11,7 +11,13 @@ Note: To create the database with current schema, models, and migrations,
 use the following command in terminal: diesel migration run
 -----------------------------------------------------*/
 
-#[derive(Queryable)] // Allows diesel to map the results of a db query to instances of this struct.
+use diesel::prelude::*;
+use serde::Serialize;
+use crate::schema::beats;
+
+#[derive(Queryable, Selectable, Serialize)]
+#[diesel(table_name = crate::schema::beats)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Beat {
     pub id: i32,
     pub title: String,
@@ -26,10 +32,12 @@ pub struct Beat {
     pub cover_art: Option<String>,
     pub comments: Option<String>,
     pub file_path: String,
+    pub bpm: Option<i32>,
+    pub musical_key: Option<String>,
 }
 
 #[derive(Insertable)]
-#[table_name = "beats"]
+#[diesel(table_name = beats)]
 pub struct NewBeat<'a> {
     pub title: &'a str,
     pub artist: &'a str,
@@ -43,4 +51,6 @@ pub struct NewBeat<'a> {
     pub cover_art: Option<&'a str>,
     pub comments: Option<&'a str>,
     pub file_path: &'a str,
+    pub bpm: Option<i32>,
+    pub musical_key: Option<&'a str>,
 }
