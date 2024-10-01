@@ -1,25 +1,50 @@
-/*
-Schemas!
-Schemas define the structure of the database tables. This includes table names, attribute names, and data types.
-Diesel uses schemas to generate SQL queries and map models to tables.
-*/
+// @generated automatically by Diesel CLI.
 
-table! {
-    beats (id) {
-        id -> Int4,
-        title -> Varchar,
-        artist -> Varchar,
-        album -> Varchar,
-        genre -> Varchar,
-        year -> Int4,
-        track_number -> Int4,
-        duration -> Int4,
-        composer -> Varchar,
-        lyricist -> Varchar,
-        cover_art -> Varchar,
-        comments -> Text,
-        file_path -> Varchar,
+diesel::table! {
+    beat_collection (id) {
+        id -> Integer,
+        title -> Text,
+        set_name -> Text,
+        venue -> Nullable<Text>,
+        city -> Nullable<Text>,
+        state_name -> Nullable<Text>,
+        date_played -> Nullable<Timestamp>,
+        date_created -> Nullable<Timestamp>,
     }
 }
 
+diesel::table! {
+    beats (id) {
+        id -> Integer,
+        title -> Text,
+        artist -> Text,
+        album -> Nullable<Text>,
+        genre -> Nullable<Text>,
+        year -> Nullable<Integer>,
+        track_number -> Nullable<Integer>,
+        duration -> Nullable<Integer>,
+        composer -> Nullable<Text>,
+        lyricist -> Nullable<Text>,
+        cover_art -> Nullable<Text>,
+        comments -> Nullable<Text>,
+        file_path -> Text,
+        bpm -> Nullable<Integer>,
+        musical_key -> Nullable<Text>,
+    }
+}
 
+diesel::table! {
+    set_beat (beat_collection_id, beat_id) {
+        beat_collection_id -> Integer,
+        beat_id -> Integer,
+    }
+}
+
+diesel::joinable!(set_beat -> beat_collection (beat_collection_id));
+diesel::joinable!(set_beat -> beats (beat_id));
+
+diesel::allow_tables_to_appear_in_same_query!(
+    beat_collection,
+    beats,
+    set_beat,
+);

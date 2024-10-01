@@ -1,6 +1,7 @@
 -- Your SQL goes here
+
 CREATE TABLE beats (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     title VARCHAR NOT NULL,
     artist VARCHAR NOT NULL,
     album VARCHAR,
@@ -12,5 +13,7 @@ CREATE TABLE beats (
     lyricist VARCHAR,
     cover_art VARCHAR,
     comments TEXT,
-    file_path VARCHAR NOT NULL
+    file_path VARCHAR NOT NULL,
+    bpm INTEGER,
+    musical_key VARCHAR
 );
