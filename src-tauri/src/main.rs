@@ -6,12 +6,12 @@ mod models;
 mod schema;
 
 use diesel::prelude::*;
-use models::NewBeat;
+
 use serde_json;
 use std::{env, sync::Mutex};
 use tauri::State;
 use crate::models::Beat;
-use crate::schema::beats;
+
 
 // Struct to hold the Database connection
 struct AppState {

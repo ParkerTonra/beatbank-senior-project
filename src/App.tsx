@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Beat } from "./bindings";
 
 import "./App.css";
@@ -11,9 +11,9 @@ import { useBeats } from "./hooks/useBeats";
 function App() {
   const [showSplashScreen, setShowSplashScreen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [refresh, setRefresh] = useState(false);
   const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null);
-  const [playThisBeat, setPlayThisBeat] = useState<Beat | null>(null);
+  //TODO: audio player
+  // const [playThisBeat, setPlayThisBeat] = useState<Beat | null>(null);
 
 
 
@@ -39,9 +39,10 @@ function App() {
     setBeats(newBeats);
   };
 
-  const handleBeatPlay = (beat: Beat) => {
-    setPlayThisBeat(beat);
-  };
+  // TODO: audio player
+  // const handleBeatPlay = (beat: Beat) => {
+  //   setPlayThisBeat(beat);
+  // };
 
   const handleBeatSelection = (beat: Beat) => {
     console.log("beat selected:", beat);
@@ -62,13 +63,13 @@ function App() {
       <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat}/>
       <BeatTable
         beats={beats}
-        onBeatPlay={handleBeatPlay}
+        //onBeatPlay={handleBeatPlay}
         onBeatSelect={handleBeatSelection}
         isEditing={isEditing}
         setIsEditing={setIsEditing}
         selectedBeat={selectedBeat}
         setSelectedBeat={setSelectedBeat}
-        // onTriggerRefresh={triggerRefresh}
+        fetchData={fetchData}
         onBeatsChange={handleBeatsChange}
         columnVisibility={columnVisibility}
         setColumnVisibility={setColumnVisibility}

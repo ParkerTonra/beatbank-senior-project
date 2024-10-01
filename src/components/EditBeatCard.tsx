@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Beat } from "../bindings";
+import { EditThisBeat } from "../bindings";
 
 interface EditBeatCardProps {
     beat: Beat;
     onClose: () => void;
-    onSave: (updatedBeat: Beat) => void;
+    onSave: (updatedBeat: EditThisBeat) => void;
 }
 
 
@@ -14,7 +15,7 @@ const EditBeatCard: React.FC<EditBeatCardProps> = ({ beat, onClose, onSave }) =>
         ...beat,
         title: beat.title || "",
         bpm: beat.bpm || 0,
-        key: beat.key || "",
+        musical_key: beat.musical_key || "",
         artist: beat.artist || "",
         file_path: beat.file_path || "",
     });
@@ -81,7 +82,7 @@ const EditBeatCard: React.FC<EditBeatCardProps> = ({ beat, onClose, onSave }) =>
                             type="text"
                             name="key"
                             id="key"
-                            value={editedBeat.key}
+                            value={editedBeat.musical_key}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         />

@@ -10,7 +10,7 @@ import {
   ColumnSizingState,
 } from "@tanstack/react-table";
 import { createColumnDef } from "./../models/ColumnDef.tsx";
-import { Beat, ColumnVis } from "./../bindings.ts";
+import { Beat, ColumnVis, EditThisBeat } from "./../bindings.ts";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import {
   DndContext,
@@ -34,37 +34,30 @@ import EditBeatCard from "./EditBeatCard.tsx";
 
 interface BeatTableProps {
   beats: Beat[];
-  onBeatPlay: (beat: Beat) => void;
+  // TODO: audio player
+  // onBeatPlay: (beat: Beat) => void;
   onBeatSelect: (beat: Beat) => void;
   isEditing: boolean;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   selectedBeat: Beat | null;
   setSelectedBeat: React.Dispatch<React.SetStateAction<Beat | null>>;
-  onTriggerRefresh: () => void;
+  fetchData: () => void;
   onBeatsChange: (newBeats: Beat[]) => void;
   columnVisibility: ColumnVis;
   setColumnVisibility: React.Dispatch<React.SetStateAction<ColumnVis>>;
   saveRowOrder?: (beatsToSave: Beat[]) => Promise<void>; // TODO: make this mandatory and work for sets as well.
 }
 
-interface EditThisBeat {
-  id: number;
-  title: string;
-  bpm: number;
-  key: string;
-  duration: string;
-  artist: string;
-}
-
 function BeatTable({
   beats,
-  onBeatPlay,
+  // TODO: audio player
+  // onBeatPlay,
   onBeatSelect,
   isEditing,
   setIsEditing,
   selectedBeat,
   setSelectedBeat,
-  onTriggerRefresh,
+  fetchData,
   onBeatsChange,
   columnVisibility,
   setColumnVisibility,
@@ -99,6 +92,11 @@ function BeatTable({
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
+
+  const onBeatPlay = (beat: Beat) => {
+    // TODO: audio player
+    console.log("handleBeatPlay:", beat);
+  };
 
   const handleRowSelection = (beat: Beat) => {
     const rowId = beat.id.toString();
@@ -323,7 +321,7 @@ function BeatTable({
                   .then((response) => {
                     console.log("Response from update_beat:", response);
                     console.log("Fetching updated data");
-                    onTriggerRefresh();
+                    fetchData();
                   })
                   .catch((error) => {
                     console.error("Error updating beat:", error);

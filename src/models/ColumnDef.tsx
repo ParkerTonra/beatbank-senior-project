@@ -7,7 +7,7 @@ interface Row {
   id: string;
   original: Beat;
 }
-
+// old:
 export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Beat>[] => [
   {
     accessorKey: "drag-handle",

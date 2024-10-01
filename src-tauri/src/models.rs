@@ -10,7 +10,7 @@ Structs here will enable Diesel ORM to make efficient database operations.
 Note: To create the database with current schema, models, and migrations,
 use the following command in terminal: diesel migration run
 -----------------------------------------------------*/
-use super::schema::beats;
+
 use diesel::prelude::*;
 
 
