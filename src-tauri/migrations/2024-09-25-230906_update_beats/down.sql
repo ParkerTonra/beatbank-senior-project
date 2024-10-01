@@ -1,5 +1,4 @@
--- Your SQL goes here
-
+-- This file should undo anything in `up.sql`
 DROP TABLE IF EXISTS beats;
 
 CREATE TABLE beats (
@@ -15,7 +14,5 @@ CREATE TABLE beats (
     lyricist VARCHAR,
     cover_art VARCHAR,
     comments TEXT,
-    file_path VARCHAR NOT NULL,
-    bpm INTEGER,
-    musical_key VARCHAR
+    file_path VARCHAR NOT NULL
 );

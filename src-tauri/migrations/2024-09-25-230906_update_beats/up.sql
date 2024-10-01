@@ -1,5 +1,4 @@
 -- Your SQL goes here
-
 DROP TABLE IF EXISTS beats;
 
 CREATE TABLE beats (
