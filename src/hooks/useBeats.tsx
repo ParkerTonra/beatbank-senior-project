@@ -1,7 +1,7 @@
 
 import { useState, useCallback, Dispatch, SetStateAction } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { Beat } from "./../bindings";
+import { Beat, BeatCollection } from "./../bindings";
 
 const defaultColumnVisibility = {
   title: true,
@@ -20,22 +20,25 @@ export const useBeats = () => {
   const [columnVisibility, setColumnVisibility] = useState(
     defaultColumnVisibility
   );
+
+  const [beatCollections, setBeatCollections]: [BeatCollection[], Dispatch<SetStateAction<BeatCollection[]>>] = useState<BeatCollection[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [setName, setSetName] = useState('');
-
+  // fetch sets, data, and column visibility for initialization
   const fetchData = useCallback(async () => {
     console.log("Fetching data...");
     setLoading(true);
     setError(null);
     try {
-      const [beatsResult, columnVisResult] = await Promise.all([
+      const [beatsResult, columnVisResult, collectionsResult] = await Promise.all([
         invoke<string>("fetch_beats"),
         invoke<string>("fetch_column_vis"),
+        invoke<string>("fetch_collections"), 
       ]);
 
-      const beats = JSON.parse(beatsResult);
-      setBeats(beats);
+      const myBeats = JSON.parse(beatsResult);
+      setBeats(myBeats);
 
       let columnVis = JSON.parse(columnVisResult);
       if (columnVis && typeof columnVis === "object" && "0" in columnVis) {
@@ -43,6 +46,13 @@ export const useBeats = () => {
       }
 
       setColumnVisibility({ ...defaultColumnVisibility, ...columnVis });
+
+      console.log("collectionsResult:", collectionsResult);
+
+      let myBeatCollections = JSON.parse(collectionsResult);
+      setBeatCollections(myBeatCollections);
+      console.log("Fetched collections:", myBeatCollections);
+      
     } catch (error) {
       setError(error as Error);
       console.error("Error fetching data:", error);
@@ -91,5 +101,6 @@ export const useBeats = () => {
     fetchData,
     fetchSetData,
     setName,
+    beatCollections,
   };
 };
