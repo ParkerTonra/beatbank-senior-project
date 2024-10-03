@@ -7,15 +7,14 @@ import { SplashScreen } from "./components/SplashScreen";
 import UploadBeat from "./components/UploadBeat";
 import BeatTable from "./components/BeatTable";
 import { useBeats } from "./hooks/useBeats";
+import { loadSettings, saveSettings, getSettingsPath } from './store';
 
 function App() {
   const [showSplashScreen, setShowSplashScreen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null);
-  //TODO: audio player
-  // const [playThisBeat, setPlayThisBeat] = useState<Beat | null>(null);
-
-
+  const [theme, setTheme] = useState<string>('light'); 
+  const [settingsPath, setSettingsPath] = useState<string>(''); 
 
   const {
     beats,
@@ -31,6 +30,28 @@ function App() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const config = { /* your config settings */ };
+      const settings = await loadSettings(config); 
+      setTheme(settings.theme); 
+
+      const path = await getSettingsPath(config); 
+      console.log("Settings path:", path); 
+      setSettingsPath(path);
+    };
+    fetchSettings();
+  }, []);
+
+  const handleThemeChange = async () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light'; 
+    setTheme(newTheme); 
+
+    const config = { /* your config settings */ };
+    await saveSettings(config, { theme: newTheme }); 
+    console.log("Theme changed to:", newTheme); 
+  };
+
   if (showSplashScreen) {
     return <SplashScreen closeSplashScreen={() => setShowSplashScreen(false)} />;
   }
@@ -39,20 +60,10 @@ function App() {
     setBeats(newBeats);
   };
 
-  // TODO: audio player
-  // const handleBeatPlay = (beat: Beat) => {
-  //   setPlayThisBeat(beat);
-  // };
-
   const handleBeatSelection = (beat: Beat) => {
     console.log("beat selected:", beat);
     setSelectedBeat(beat);
   };
-
-  // const triggerRefresh = useCallback(() => {
-  //   console.log("triggerRefresh");
-  //   setRefresh(prev => !prev);
-  // }, []);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -60,10 +71,11 @@ function App() {
   return (
     <div className="container">
       <h1>Welcome to Beatbank!</h1>
+      <h2>Current Theme: {theme}</h2> 
+      <button onClick={handleThemeChange}>Toggle Theme</button>
       <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat}/>
       <BeatTable
         beats={beats}
-        //onBeatPlay={handleBeatPlay}
         onBeatSelect={handleBeatSelection}
         isEditing={isEditing}
         setIsEditing={setIsEditing}
@@ -74,7 +86,7 @@ function App() {
         columnVisibility={columnVisibility}
         setColumnVisibility={setColumnVisibility}
       />
-      
+      <div>Settings Path: {settingsPath}</div> 
     </div>
   );
 }
