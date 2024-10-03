@@ -15,6 +15,8 @@ function App() {
   const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null);
   const [theme, setTheme] = useState<string>('light'); 
   const [settingsPath, setSettingsPath] = useState<string>(''); 
+  //TODO: audio player
+  // const [playThisBeat, setPlayThisBeat] = useState<Beat | null>(null);
 
   const {
     beats,
@@ -61,10 +63,19 @@ function App() {
     setBeats(newBeats);
   };
 
+  // TODO: audio player
+  // const handleBeatPlay = (beat: Beat) => {
+  //   setPlayThisBeat(beat);
+  // };
+
   const handleBeatSelection = (beat: Beat) => {
     console.log("beat selected:", beat);
     setSelectedBeat(beat);
   };
+  // const triggerRefresh = useCallback(() => {
+  //   console.log("triggerRefresh");
+  //   setRefresh(prev => !prev);
+  // }, []);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -77,6 +88,7 @@ function App() {
       <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat}/>
       <BeatTable
         beats={beats}
+        //onBeatPlay={handleBeatPlay}
         onBeatSelect={handleBeatSelection}
         isEditing={isEditing}
         setIsEditing={setIsEditing}
