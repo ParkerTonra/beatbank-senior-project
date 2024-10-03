@@ -10,7 +10,7 @@ mod store;
 use diesel::prelude::*;
 use serde_json;
 use std::{env, sync::Mutex};
-use tauri::{State, generate_context, generate_handler, AppHandle, Manager};
+use tauri::{State, generate_context, generate_handler};
 use crate::models::Beat;
 
 struct AppState {
