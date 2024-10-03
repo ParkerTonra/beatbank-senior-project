@@ -32,25 +32,26 @@ function App() {
 
   useEffect(() => {
     const fetchSettings = async () => {
-      const config = { /* your config settings */ };
-      const settings = await loadSettings(config); 
-      setTheme(settings.theme); 
-
-      const path = await getSettingsPath(config); 
+      const settings = await loadSettings(); // Load settings from the backend
+      setTheme(settings.theme); // Update the theme state with the loaded settings
+  
+      const path = await getSettingsPath(); // Fetch and log the settings path
       console.log("Settings path:", path); 
-      setSettingsPath(path);
+      setSettingsPath(path); // Update the state to display the settings path
     };
-    fetchSettings();
-  }, []);
-
+  
+    fetchSettings(); // Invoke the fetchSettings function when the component mounts
+  }, []); // Empty dependency array ensures this runs only once
+  
+  // Define a function to handle theme changes
   const handleThemeChange = async () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'; 
-    setTheme(newTheme); 
-
-    const config = { /* your config settings */ };
-    await saveSettings(config, { theme: newTheme }); 
-    console.log("Theme changed to:", newTheme); 
+    const newTheme = theme === 'light' ? 'dark' : 'light'; // Toggle between light and dark themes
+    setTheme(newTheme); // Update the theme state
+  
+    await saveSettings({ theme: newTheme }); // Save the new theme settings to the backend
+    console.log("Theme changed to:", newTheme); // Log the new theme for debugging purposes
   };
+  
 
   if (showSplashScreen) {
     return <SplashScreen closeSplashScreen={() => setShowSplashScreen(false)} />;
@@ -86,7 +87,6 @@ function App() {
         columnVisibility={columnVisibility}
         setColumnVisibility={setColumnVisibility}
       />
-      <div>Settings Path: {settingsPath}</div> 
     </div>
   );
 }

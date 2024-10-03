@@ -77,7 +77,16 @@ fn main() {
 
     tauri::Builder::default()
         .manage(app_state)
-        .invoke_handler(generate_handler![greet, fetch_beats, add_beat, delete_beat, fetch_column_vis, store::load_settings, store::save_settings, store::get_settings_path])
+        .invoke_handler(generate_handler![
+            greet, 
+            fetch_beats, 
+            add_beat, 
+            delete_beat, 
+            fetch_column_vis, 
+            store::load_settings, 
+            store::save_settings, 
+            store::get_settings_path
+            ])
         .run(generate_context!())
         .expect("error while running tauri application");
 }
