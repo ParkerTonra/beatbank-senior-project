@@ -76,6 +76,13 @@ pub fn new_beat_collection(
         .get_result(conn)
 }
 
+pub fn delete_beat_collection(conn: &mut SqliteConnection, id: i32) -> Result<(), DieselError> {
+    use crate::schema::beat_collection;
+    diesel::delete(beat_collection::table.find(id))
+        .execute(conn)
+        .map(|_| ())
+}
+
 
 // pub fn get_all_beats(conn: &mut SqliteConnection) -> QueryResult<Vec<Beat>> {
 //     use crate::schema::beats;

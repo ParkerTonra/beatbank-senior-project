@@ -65,11 +65,34 @@ fn delete_beat(id: i32, state: State<AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn new_beat_collection(state: State<AppState>, set_name: String, venue: Option<String>, city: Option<String>, state_name: Option<String>, date_played: Option<String>, date_created: Option<String>) -> Result<(), String> {
-  let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
-  db::new_beat_collection(&mut *conn, &set_name, venue.as_deref(), city.as_deref(), state_name.as_deref(), date_played.as_deref(), date_created.as_deref()).map_err(|e| e.to_string())?;
-  Ok(())
-  }
+fn new_beat_collection(
+    state: State<AppState>,
+    set_name: String,
+    venue: Option<String>,
+    city: Option<String>,
+    state_name: Option<String>,
+    date_played: Option<String>,
+    date_created: Option<String>,
+) -> Result<BeatCollection, String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let collection = db::new_beat_collection(
+        &mut *conn,
+        &set_name,
+        venue.as_deref(),
+        city.as_deref(),
+        state_name.as_deref(),
+        date_played.as_deref(),
+        date_created.as_deref(),
+    ).map_err(|e| e.to_string())?;
+    Ok(collection)
+}
+
+#[tauri::command]
+fn delete_beat_collection(state: State<AppState>, id: i32) -> Result<(), String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::delete_beat_collection(&mut *conn, id).map_err(|e| e.to_string())?;
+    Ok(())
+}
 
 #[tauri::command]
 fn fetch_collections(state: State<AppState>) -> Result<String, String> {
@@ -95,7 +118,16 @@ fn main() {
 
     tauri::Builder::default()
         .manage(app_state)
-        .invoke_handler(tauri::generate_handler![greet, fetch_beats, add_beat, delete_beat,fetch_column_vis, new_beat_collection, fetch_collections])
+        .invoke_handler(tauri::generate_handler![
+            greet, 
+            fetch_beats, 
+            add_beat, 
+            delete_beat,
+            fetch_column_vis, 
+            new_beat_collection, 
+            fetch_collections,
+            delete_beat_collection
+            ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
