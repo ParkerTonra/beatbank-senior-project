@@ -17,5 +17,6 @@ CREATE TABLE beats (
     comments TEXT,
     file_path VARCHAR NOT NULL,
     bpm INTEGER,
-    musical_key VARCHAR
+    musical_key VARCHAR,
+    date_created DATETIME NOT NULL DEFAULT current_timestamp
 );

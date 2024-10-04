@@ -7,7 +7,7 @@ CREATE TABLE beat_collection (
     city VARCHAR,
     state_name VARCHAR,
     date_played DATETIME,
-    date_created DATETIME DEFAULT current_timestamp
+    date_created DATETIME NOT NULL DEFAULT current_timestamp
 );
 
 CREATE TABLE set_beat (

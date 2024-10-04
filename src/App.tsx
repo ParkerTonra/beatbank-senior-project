@@ -49,11 +49,6 @@ function App() {
     setSelectedBeat(beat);
   };
 
-  // const triggerRefresh = useCallback(() => {
-  //   console.log("triggerRefresh");
-  //   setRefresh(prev => !prev);
-  // }, []);
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 

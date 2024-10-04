@@ -35,6 +35,7 @@ pub fn add_beat(conn: &mut SqliteConnection, title: &str, file_path: &str) -> Re
         comments: None,
         bpm: None,
         musical_key: None,
+        date_created: "",
     };
 
     diesel::insert_into(beats::table)
