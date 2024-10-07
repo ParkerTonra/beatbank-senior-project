@@ -11,9 +11,8 @@ use diesel::prelude::*;
 use serde_json;
 use std::{env, sync::Mutex};
 
-use tauri::State;
 use crate::models::{Beat, BeatCollection};
-use tauri::{State, generate_context, generate_handler};
+use tauri::{State};
 
 struct AppState {
     conn: Mutex<SqliteConnection>,

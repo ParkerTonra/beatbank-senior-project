@@ -13,8 +13,8 @@ function App() {
   const [showSplashScreen, setShowSplashScreen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null);
-  const [theme, setTheme] = useState<string>('light'); 
-  const [settingsPath, setSettingsPath] = useState<string>(''); 
+  const [theme, setTheme] = useState<string>('light');
+  const [settingsPath, setSettingsPath] = useState<string>('');
   //TODO: audio player
   // const [playThisBeat, setPlayThisBeat] = useState<Beat | null>(null);
 
@@ -37,24 +37,24 @@ function App() {
     const fetchSettings = async () => {
       const settings = await loadSettings(); // Load settings from the backend
       setTheme(settings.theme); // Update the theme state with the loaded settings
-  
+
       const path = await getSettingsPath(); // Fetch and log the settings path
-      console.log("Settings path:", path); 
+      console.log("Settings path:", path);
       setSettingsPath(path); // Update the state to display the settings path
     };
-  
+
     fetchSettings(); // Invoke the fetchSettings function when the component mounts
   }, []); // Empty dependency array ensures this runs only once
-  
+
   // Define a function to handle theme changes
   const handleThemeChange = async () => {
     const newTheme = theme === 'light' ? 'dark' : 'light'; // Toggle between light and dark themes
     setTheme(newTheme); // Update the theme state
-  
+
     await saveSettings({ theme: newTheme }); // Save the new theme settings to the backend
     console.log("Theme changed to:", newTheme); // Log the new theme for debugging purposes
   };
-  
+
 
   if (showSplashScreen) {
     return <SplashScreen closeSplashScreen={() => setShowSplashScreen(false)} />;
@@ -80,6 +80,8 @@ function App() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
           <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
+          <h2>Current Theme: {theme}</h2>
+          <button onClick={handleThemeChange}>Toggle Theme</button>
           <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
           <BeatTable
             beats={beats}

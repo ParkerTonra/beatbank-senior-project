@@ -11,8 +11,8 @@ Note: To create the database with current schema, models, and migrations,
 use the following command in terminal: diesel migration run
 -----------------------------------------------------*/
 
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
-
 
 #[derive(Queryable, Selectable, Debug)]
 #[diesel(table_name = crate::schema::beats)]
@@ -34,6 +34,7 @@ pub struct Beat {
     pub file_path: String,
     pub bpm: Option<i32>,
     pub musical_key: Option<String>,
+    pub date_created: NaiveDateTime,
 }
 
 #[derive(Insertable)]
@@ -53,6 +54,7 @@ pub struct NewBeat<'a> {
     pub file_path: &'a str,
     pub bpm: Option<i32>,
     pub musical_key: Option<&'a str>,
+    pub date_created: &'a str,
 }
 
 #[derive(Queryable, Selectable, Debug)]
@@ -66,7 +68,7 @@ pub struct BeatCollection {
     pub city: Option<String>,
     pub state_name: Option<String>,
     pub date_played: Option<String>,
-    pub date_created: Option<String>,
+    pub date_created: NaiveDateTime,
 }
 
 #[derive(Insertable)]

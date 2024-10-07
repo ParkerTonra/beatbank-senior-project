@@ -8,7 +8,7 @@ diesel::table! {
         city -> Nullable<Text>,
         state_name -> Nullable<Text>,
         date_played -> Nullable<Timestamp>,
-        date_created -> Nullable<Timestamp>,
+        date_created -> Timestamp,
     }
 }
 
@@ -29,6 +29,7 @@ diesel::table! {
         file_path -> Text,
         bpm -> Nullable<Integer>,
         musical_key -> Nullable<Text>,
+        date_created -> Timestamp,
     }
 }
 
