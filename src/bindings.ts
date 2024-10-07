@@ -17,10 +17,15 @@ export type Beat = {
     musical_key?: string;
   };
 
-export type BeatSet = {
-  id: number
-  setName: string;
-}
+export type BeatCollection = {
+    id: number;
+    set_name: string;
+    venue?: string;
+    city?: string;
+    state_name?: string;
+    date_played?: string;
+    date_created?: string;
+  };
 
   export type ColumnVis = {
     id: boolean;

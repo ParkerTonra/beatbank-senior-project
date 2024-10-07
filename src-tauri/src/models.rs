@@ -54,3 +54,30 @@ pub struct NewBeat<'a> {
     pub bpm: Option<i32>,
     pub musical_key: Option<&'a str>,
 }
+
+#[derive(Queryable, Selectable, Debug)]
+#[diesel(table_name = crate::schema::beat_collection)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+#[derive(serde::Serialize)]
+pub struct BeatCollection {
+    pub id: i32,
+    pub set_name: String,
+    pub venue: Option<String>,
+    pub city: Option<String>,
+    pub state_name: Option<String>,
+    pub date_played: Option<String>,
+    pub date_created: Option<String>,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = crate::schema::beat_collection)]
+pub struct NewBeatCollection<'a> {
+    pub set_name: &'a str,
+    pub venue: Option<&'a str>,
+    pub city: Option<&'a str>,
+    pub state_name: Option<&'a str>,
+    pub date_played: Option<&'a str>,
+    pub date_created: Option<&'a str>,
+}
+
+

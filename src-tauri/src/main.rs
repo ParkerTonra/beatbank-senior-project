@@ -10,8 +10,10 @@ mod store;
 use diesel::prelude::*;
 use serde_json;
 use std::{env, sync::Mutex};
+
+use tauri::State;
+use crate::models::{Beat, BeatCollection};
 use tauri::{State, generate_context, generate_handler};
-use crate::models::Beat;
 
 struct AppState {
     conn: Mutex<SqliteConnection>,
@@ -24,16 +26,13 @@ fn greet(name: &str) -> String {
 
 #[tauri::command]
 fn fetch_beats(state: State<AppState>) -> Result<String, String> {
-    let mut conn = state.conn.lock().unwrap();
-    match get_all_beats(&mut *conn) {
-        Ok(beats) => serde_json::to_string(&beats).map_err(|e| e.to_string()),
-        Err(e) => Err(e.to_string()),
-    }
-}
-
-fn get_all_beats(conn: &mut SqliteConnection) -> QueryResult<Vec<Beat>> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    
     use crate::schema::beats::dsl::*;
-    beats.load::<Beat>(conn)
+    
+    beats.load::<Beat>(&mut *conn)
+        .map_err(|e| e.to_string())
+        .and_then(|beats_result| serde_json::to_string(&beats_result).map_err(|e| e.to_string()))
 }
 
 #[tauri::command]
@@ -65,6 +64,48 @@ fn delete_beat(id: i32, state: State<AppState>) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn new_beat_collection(
+    state: State<AppState>,
+    set_name: String,
+    venue: Option<String>,
+    city: Option<String>,
+    state_name: Option<String>,
+    date_played: Option<String>,
+    date_created: Option<String>,
+) -> Result<BeatCollection, String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    let collection = db::new_beat_collection(
+        &mut *conn,
+        &set_name,
+        venue.as_deref(),
+        city.as_deref(),
+        state_name.as_deref(),
+        date_played.as_deref(),
+        date_created.as_deref(),
+    ).map_err(|e| e.to_string())?;
+    Ok(collection)
+}
+
+#[tauri::command]
+fn delete_beat_collection(state: State<AppState>, id: i32) -> Result<(), String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::delete_beat_collection(&mut *conn, id).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn fetch_collections(state: State<AppState>) -> Result<String, String> {
+println!("Fetching collections...");
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    
+    use crate::schema::beat_collection::dsl::*;
+    
+    beat_collection.load::<BeatCollection>(&mut *conn)
+        .map_err(|e| e.to_string())
+        .and_then(|beats_result| serde_json::to_string(&beats_result).map_err(|e| e.to_string()))
+}
+
 fn main() {
     println!("Starting beatbank...");
 
@@ -77,16 +118,20 @@ fn main() {
 
     tauri::Builder::default()
         .manage(app_state)
-        .invoke_handler(generate_handler![
+        .invoke_handler(tauri::generate_handler![
             greet, 
             fetch_beats, 
             add_beat, 
-            delete_beat, 
+            delete_beat,
             fetch_column_vis, 
+            new_beat_collection, 
+            fetch_collections,
+            delete_beat_collection,
             store::load_settings, 
             store::save_settings, 
             store::get_settings_path
             ])
-        .run(generate_context!())
+        .run(tauri::generate_context!())
+
         .expect("error while running tauri application");
 }
