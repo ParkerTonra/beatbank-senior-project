@@ -57,17 +57,17 @@ pub struct NewBeat<'a> {
     pub date_created: &'a str,
 }
 
-
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Debug)]
 #[diesel(table_name = crate::schema::beat_collection)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+#[derive(serde::Serialize)]
 pub struct BeatCollection {
     pub id: i32,
     pub set_name: String,
     pub venue: Option<String>,
     pub city: Option<String>,
     pub state_name: Option<String>,
-    pub date_played: Option<NaiveDateTime>,
+    pub date_played: Option<String>,
     pub date_created: NaiveDateTime,
 }
 
@@ -79,6 +79,7 @@ pub struct NewBeatCollection<'a> {
     pub city: Option<&'a str>,
     pub state_name: Option<&'a str>,
     pub date_played: Option<&'a str>,
-    pub date_created: &'a str,
+    pub date_created: Option<&'a str>,
 }
+
 

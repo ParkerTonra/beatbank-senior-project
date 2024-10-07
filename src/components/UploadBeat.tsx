@@ -74,6 +74,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
     <div>
       <button onClick={handleFileUpload}>Upload a beat</button>
       <button onClick={handleFileDelete}>Delete</button>
+      <button onClick={fetchData}>Refresh</button>
       {selectedFiles.length > 0 && (
         <div>
           <p>Selected files:</p>

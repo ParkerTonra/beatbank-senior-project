@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Beat } from "./bindings";
-
+import Sidebar from "./components/Sidebar";
 import "./App.css";
 import "./Main.css";
 import { SplashScreen } from "./components/SplashScreen";
@@ -20,6 +20,7 @@ function App() {
 
   const {
     beats,
+    beatCollections,
     fetchData,
     columnVisibility,
     loading,
@@ -27,7 +28,7 @@ function App() {
     setBeats,
     setColumnVisibility,
   } = useBeats();
-  
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -63,38 +64,37 @@ function App() {
     setBeats(newBeats);
   };
 
-  // TODO: audio player
-  // const handleBeatPlay = (beat: Beat) => {
-  //   setPlayThisBeat(beat);
-  // };
-
   const handleBeatSelection = (beat: Beat) => {
     console.log("beat selected:", beat);
     setSelectedBeat(beat);
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  console.log("beatCollections:", beatCollections);
+
+  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (error) return <div className="flex items-center justify-center h-screen">Error: {error.message}</div>;
 
   return (
-    <div className="container">
-      <h1>Welcome to Beatbank!</h1>
-      <h2>Current Theme: {theme}</h2>
-      <button onClick={handleThemeChange}>Toggle Theme</button>
-      <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat}/>
-      <BeatTable
-        beats={beats}
-        //onBeatPlay={handleBeatPlay}
-        onBeatSelect={handleBeatSelection}
-        isEditing={isEditing}
-        setIsEditing={setIsEditing}
-        selectedBeat={selectedBeat}
-        setSelectedBeat={setSelectedBeat}
-        fetchData={fetchData}
-        onBeatsChange={handleBeatsChange}
-        columnVisibility={columnVisibility}
-        setColumnVisibility={setColumnVisibility}
-      />
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar collections={beatCollections} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
+          <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
+          <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
+          <BeatTable
+            beats={beats}
+            onBeatSelect={handleBeatSelection}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            selectedBeat={selectedBeat}
+            setSelectedBeat={setSelectedBeat}
+            fetchData={fetchData}
+            onBeatsChange={handleBeatsChange}
+            columnVisibility={columnVisibility}
+            setColumnVisibility={setColumnVisibility}
+          />
+        </main>
+      </div>
     </div>
   );
 }

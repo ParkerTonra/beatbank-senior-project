@@ -6,7 +6,7 @@ use std::env;
 use chrono::Utc;
 
 
-use crate::models::{Beat, NewBeat};
+use crate::models::{Beat, NewBeat, BeatCollection, NewBeatCollection};
 
 pub fn establish_connection() -> SqliteConnection {
     dotenv().ok();
@@ -48,6 +48,39 @@ pub fn add_beat(conn: &mut SqliteConnection, title: &str, file_path: &str) -> Re
 pub fn delete_beat(conn: &mut SqliteConnection, id: i32) -> Result<(), DieselError> {
     use crate::schema::beats;
     diesel::delete(beats::table.find(id))
+        .execute(conn)
+        .map(|_| ())
+}
+
+pub fn new_beat_collection(
+    conn: &mut SqliteConnection,
+    set_name: &str,
+    venue: Option<&str>,
+    city: Option<&str>,
+    state_name: Option<&str>,
+    date_played: Option<&str>,
+    date_created: Option<&str>
+) -> Result<BeatCollection, DieselError> {
+    use crate::schema::beat_collection;
+
+    let new_beat_collection = NewBeatCollection {
+        set_name,
+        venue,
+        city,
+        state_name,
+        date_played,
+        date_created,
+    };
+
+    diesel::insert_into(beat_collection::table)
+        .values(&new_beat_collection)
+        .returning(BeatCollection::as_returning())
+        .get_result(conn)
+}
+
+pub fn delete_beat_collection(conn: &mut SqliteConnection, id: i32) -> Result<(), DieselError> {
+    use crate::schema::beat_collection;
+    diesel::delete(beat_collection::table.find(id))
         .execute(conn)
         .map(|_| ())
 }
