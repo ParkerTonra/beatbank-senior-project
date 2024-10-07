@@ -80,6 +80,8 @@ function App() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
           <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
+          <h2>Current Theme: {theme}</h2>
+          <button onClick={handleThemeChange}>Toggle Theme</button>
           <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
           <BeatTable
             beats={beats}
