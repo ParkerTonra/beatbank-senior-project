@@ -3,6 +3,7 @@ use diesel::result::Error as DieselError;
 use diesel::prelude::*;
 use dotenvy::dotenv;
 use std::env;
+use chrono::Utc;
 
 
 use crate::models::{Beat, NewBeat};
@@ -35,7 +36,7 @@ pub fn add_beat(conn: &mut SqliteConnection, title: &str, file_path: &str) -> Re
         comments: None,
         bpm: None,
         musical_key: None,
-        date_created: "",
+        date_created: &Utc::now().naive_utc().to_string()
     };
 
     diesel::insert_into(beats::table)
