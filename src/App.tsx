@@ -7,11 +7,17 @@ import { SplashScreen } from "./components/SplashScreen";
 import UploadBeat from "./components/UploadBeat";
 import BeatTable from "./components/BeatTable";
 import { useBeats } from "./hooks/useBeats";
+import { loadSettings, saveSettings, getSettingsPath } from './store';
 
 function App() {
   const [showSplashScreen, setShowSplashScreen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null);
+  const [theme, setTheme] = useState<string>('light'); 
+  const [settingsPath, setSettingsPath] = useState<string>(''); 
+  //TODO: audio player
+  // const [playThisBeat, setPlayThisBeat] = useState<Beat | null>(null);
+
   const {
     beats,
     beatCollections,
@@ -26,6 +32,29 @@ function App() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const settings = await loadSettings(); // Load settings from the backend
+      setTheme(settings.theme); // Update the theme state with the loaded settings
+  
+      const path = await getSettingsPath(); // Fetch and log the settings path
+      console.log("Settings path:", path); 
+      setSettingsPath(path); // Update the state to display the settings path
+    };
+  
+    fetchSettings(); // Invoke the fetchSettings function when the component mounts
+  }, []); // Empty dependency array ensures this runs only once
+  
+  // Define a function to handle theme changes
+  const handleThemeChange = async () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light'; // Toggle between light and dark themes
+    setTheme(newTheme); // Update the theme state
+  
+    await saveSettings({ theme: newTheme }); // Save the new theme settings to the backend
+    console.log("Theme changed to:", newTheme); // Log the new theme for debugging purposes
+  };
+  
 
   if (showSplashScreen) {
     return <SplashScreen closeSplashScreen={() => setShowSplashScreen(false)} />;

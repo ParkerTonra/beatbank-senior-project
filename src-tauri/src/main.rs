@@ -1,23 +1,23 @@
+// src-tauri/src/main.rs
+
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod db;
 mod models;
 mod schema;
-
+mod store;
 use diesel::prelude::*;
-
 use serde_json;
 use std::{env, sync::Mutex};
+
 use tauri::State;
 use crate::models::{Beat, BeatCollection};
+use tauri::{State, generate_context, generate_handler};
 
-
-// Struct to hold the Database connection
 struct AppState {
     conn: Mutex<SqliteConnection>,
 }
-
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -126,8 +126,12 @@ fn main() {
             fetch_column_vis, 
             new_beat_collection, 
             fetch_collections,
-            delete_beat_collection
+            delete_beat_collection,
+            store::load_settings, 
+            store::save_settings, 
+            store::get_settings_path
             ])
         .run(tauri::generate_context!())
+
         .expect("error while running tauri application");
 }
