@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Beat } from "./bindings";
+import { Beat, BeatCollection } from "./bindings";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
 import "./Main.css";
@@ -8,6 +8,11 @@ import UploadBeat from "./components/UploadBeat";
 import BeatTable from "./components/BeatTable";
 import { useBeats } from "./hooks/useBeats";
 import { loadSettings, saveSettings, getSettingsPath } from './store';
+import { DndContext, DragEndEvent, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { invoke } from "@tauri-apps/api/tauri";
+import { message } from "@tauri-apps/api/dialog";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import SettingsDropdown from "./components/SettingsDropdown";
 
 function App() {
   const [showSplashScreen, setShowSplashScreen] = useState(true);
@@ -15,6 +20,51 @@ function App() {
   const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null);
   const [theme, setTheme] = useState<string>('light');
   const [settingsPath, setSettingsPath] = useState<string>('');
+  
+
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor)
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    console.log("Drag end event:", event);
+    const { active, over } = event;
+
+    if (active && over) {
+      if (String(over.id).startsWith('collection-')) {
+        // Handle dragging to collection
+        const beatId = active.id;
+        const collectionId = Number(String(over.id).split('-')[1]);
+        handleAddToCollection(collectionId);
+      } else {
+        // Handle sorting within the table
+        const oldIndex = beats.findIndex(beat => beat.id.toString() === active.id);
+        const newIndex = beats.findIndex(beat => beat.id.toString() === over.id);
+        
+        if (oldIndex !== newIndex) {
+          const newBeats = arrayMove(beats, oldIndex, newIndex);
+          setBeats(newBeats);
+        }
+      }
+    }
+  };
+
+  const handleAddToCollection = async (collectionId: number) => {
+    if (!selectedBeat) {
+      message('Please select a beat first.', { title: 'Error', type: 'error' });
+      return;
+    }
+    const beatId = selectedBeat.id;
+    try {
+      console.log(`Adding beat ${beatId} to collection ${collectionId}`);
+      await invoke('add_beat_to_collection', { beatId, collectionId });
+      // Refresh data or update state as needed
+      fetchData();
+    } catch (error) {
+      console.error('Error adding beat to collection:', error);
+    }
+  }
   //TODO: audio player
   // const [playThisBeat, setPlayThisBeat] = useState<Beat | null>(null);
 
@@ -32,6 +82,8 @@ function App() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const [collections, setCollections] = useState<BeatCollection[]>(beatCollections);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -55,6 +107,7 @@ function App() {
     console.log("Theme changed to:", newTheme); // Log the new theme for debugging purposes
   };
 
+  
 
   if (showSplashScreen) {
     return <SplashScreen closeSplashScreen={() => setShowSplashScreen(false)} />;
@@ -75,14 +128,20 @@ function App() {
   if (error) return <div className="flex items-center justify-center h-screen">Error: {error.message}</div>;
 
   return (
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
     <div className="flex h-screen bg-gray-100">
-      <Sidebar collections={beatCollections} />
+      <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
           <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
+          {/* debug info */}
           <h2>Current Theme: {theme}</h2>
+          <h2>Selected Beat : {selectedBeat ? selectedBeat.title : 'None'}</h2>
+          <SettingsDropdown sets={beatCollections} onAddToCollection={handleAddToCollection} />
           <button onClick={handleThemeChange}>Toggle Theme</button>
+          <button onClick={handleAddToCollection}>Add to Collection</button>
           <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
+          <SortableContext items={beats.map(beat => beat.id.toString())} strategy={verticalListSortingStrategy}>
           <BeatTable
             beats={beats}
             onBeatSelect={handleBeatSelection}
@@ -92,12 +151,17 @@ function App() {
             setSelectedBeat={setSelectedBeat}
             fetchData={fetchData}
             onBeatsChange={handleBeatsChange}
+            onAddBeatToCollection={handleAddToCollection}
             columnVisibility={columnVisibility}
             setColumnVisibility={setColumnVisibility}
+            onDragEnd={handleDragEnd}
           />
+          </SortableContext>
         </main>
       </div>
     </div>
+    <DragOverlay>{/* Render dragged item */}</DragOverlay>
+    </DndContext>
   );
 }
 

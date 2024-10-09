@@ -8,8 +8,6 @@ interface EditBeatCardProps {
     onSave: (updatedBeat: EditThisBeat) => void;
 }
 
-
-
 const EditBeatCard: React.FC<EditBeatCardProps> = ({ beat, onClose, onSave }) => {
     const [editedBeat, setEditedBeat] = useState<Beat>({
         ...beat,

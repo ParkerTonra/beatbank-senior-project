@@ -6,7 +6,7 @@ use std::env;
 use chrono::Utc;
 
 
-use crate::models::{Beat, NewBeat, BeatCollection, NewBeatCollection};
+use crate::{models::{Beat, BeatCollection, NewBeat, NewBeatCollection}, schema::set_beat};
 
 pub fn establish_connection() -> SqliteConnection {
     dotenv().ok();
@@ -85,6 +85,13 @@ pub fn delete_beat_collection(conn: &mut SqliteConnection, id: i32) -> Result<()
         .map(|_| ())
 }
 
+pub fn add_beat_to_collection(conn: &mut SqliteConnection, collection_id: i32, beat_id: i32) -> Result<(), DieselError> {
+    use crate::schema::set_beat;
+    diesel::insert_into(set_beat::table)
+        .values((set_beat::dsl::beat_id.eq(beat_id), set_beat::dsl::beat_collection_id.eq(collection_id)))
+        .execute(conn)
+        .map(|_| ())
+}
 
 // pub fn get_all_beats(conn: &mut SqliteConnection) -> QueryResult<Vec<Beat>> {
 //     use crate::schema::beats;

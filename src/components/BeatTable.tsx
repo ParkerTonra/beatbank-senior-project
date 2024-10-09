@@ -46,12 +46,15 @@ interface BeatTableProps {
   columnVisibility: ColumnVis;
   setColumnVisibility: React.Dispatch<React.SetStateAction<ColumnVis>>;
   saveRowOrder?: (beatsToSave: Beat[]) => Promise<void>; // TODO: make this mandatory and work for sets as well.
+  onAddBeatToCollection: (beatId: number, collectionId: number) => void;
+  onDragEnd: (event: DragEndEvent) => void;
 }
 
 function BeatTable({
   beats,
   // TODO: audio player
   // onBeatPlay,
+  onAddBeatToCollection,
   onBeatSelect,
   isEditing,
   setIsEditing,
@@ -172,25 +175,31 @@ function BeatTable({
     enableRowSelection: true,
     enableMultiRowSelection: true,
     onColumnVisibilityChange: handleColumnVisibilityChange,
-    debugTable: true,
-    debugHeaders: true,
-    debugColumns: true,
+    // uncomment for descriptive logging of table state
+    // debugTable: true,
+    // debugHeaders: true,
+    // debugColumns: true,
   });
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent) => {
+    console.log('drag end.')
     const { active, over } = event;
-    if (active && over && active.id !== over.id) {
-      const newBeats = arrayMove(
-        beats,
-        beats.findIndex((beat) => beat.id === active.id),
-        beats.findIndex((beat) => beat.id === over.id)
-      );
-      
+
+    if (!active || !over) return;
+
+    const beatId = Number(active.id);
+    const overId = String(over.id);
+
+    if (overId.startsWith('collection-')) {
+      // A beat was dropped onto a collection
+      const collectionId = Number(overId.split('-')[1]);
+      onAddBeatToCollection(beatId, collectionId);
+    } else if (active.id !== over.id) {
+      // The beat was reordered within the table
+      const oldIndex = beats.findIndex(beat => beat.id === beatId);
+      const newIndex = beats.findIndex(beat => beat.id === Number(over.id));
+      const newBeats = arrayMove(beats, oldIndex, newIndex);
       onBeatsChange(newBeats);
-
-      
-
-      saveRowOrder(newBeats);
     }
   };
 
@@ -218,7 +227,7 @@ function BeatTable({
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-y-auto">
+    <div className="flex flex-col h-full w-full overflow-y-auto select-none">
       <DndContext
         collisionDetection={closestCenter}
         modifiers={[restrictToVerticalAxis]}
@@ -268,6 +277,7 @@ function BeatTable({
                   row={rowElement}
                   key={rowElement.id}
                   onRowSelection={handleRowSelection}
+                  onDragEnd={handleDragEnd}
                 />
               ))}
             </SortableContext>

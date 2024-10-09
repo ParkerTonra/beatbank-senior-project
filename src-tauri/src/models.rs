@@ -82,4 +82,19 @@ pub struct NewBeatCollection<'a> {
     pub date_created: Option<&'a str>,
 }
 
+//models for set_beat, for adding a beat to a collection
+#[derive(Insertable)]
+#[diesel(table_name = crate::schema::set_beat)]
+pub struct NewBeatInCollection<'a> {
+    pub beat_id: &'a i32,
+    pub beat_collection_id: &'a i32,
+}
 
+#[derive(Queryable, Selectable, Debug)]
+#[diesel(table_name = crate::schema::set_beat)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+#[derive(serde::Serialize)]
+pub struct BeatInCollection {
+    pub beat_id: i32,
+    pub beat_collection_id: i32,
+}
