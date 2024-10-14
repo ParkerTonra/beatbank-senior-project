@@ -3,13 +3,16 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { BeatCollection } from "./../bindings";
 import { useDroppable } from "@dnd-kit/core";
 import DroppableCollection from "./DroppableCollection";
+import { useNavigate, Link } from 'react-router-dom';
 
 interface SidebarProps {
   collections: BeatCollection[];
   onAddBeatToCollection: (collectionId: number) => void;
+  onDrop: (collectionId: number, beatId: number) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collections }) => {
+const Sidebar: React.FC<SidebarProps> = ({ collections, onDrop, onAddBeatToCollection }) => {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [beatCollections, setBeatCollections] = useState<BeatCollection[]>(collections);
 
@@ -63,8 +66,20 @@ const Sidebar: React.FC<SidebarProps> = ({ collections }) => {
       <div className="flex-1 overflow-y-auto">
         <h3 className="text-lg font-semibold mb-2">My sets:</h3>
         <ul className="space-y-2">
+          <li>
+            <Link to="/" className="block w-full text-left p-2 bg-gray-700 hover:bg-gray-600 rounded">
+              All Beats
+            </Link>
+          </li>
           {beatCollections.map((collection) => (
-            <DroppableCollection key={collection.id} collection={collection} />
+            <li key={collection.id}>
+              <Link
+                to={`/collection/${collection.id}`}
+                className="block w-full text-left p-2 bg-gray-700 hover:bg-gray-600 rounded"
+              >
+                <DroppableCollection collection={collection} onDrop={onDrop} />
+              </Link>
+            </li>
           ))}
         </ul>
       </div>

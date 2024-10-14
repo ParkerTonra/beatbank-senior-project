@@ -6,6 +6,7 @@ import "./Main.css";
 import { SplashScreen } from "./components/SplashScreen";
 import UploadBeat from "./components/UploadBeat";
 import BeatTable from "./components/BeatTable";
+import BeatColl from "./routes/BeatCollection";
 import { useBeats } from "./hooks/useBeats";
 import { loadSettings, saveSettings, getSettingsPath } from './store';
 import { DndContext, DragEndEvent, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
@@ -13,6 +14,8 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { message } from "@tauri-apps/api/dialog";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import SettingsDropdown from "./components/SettingsDropdown";
+import { MemoryRouter as Router, Route, Routes } from "react-router-dom";
+import BeatCollTable from "./components/BeatCollection";
 
 function App() {
   const [showSplashScreen, setShowSplashScreen] = useState(true);
@@ -117,6 +120,11 @@ function App() {
     setBeats(newBeats);
   };
 
+  const handleDrop = (collectionId: number, beatId: number) => {
+    console.log("handleDrop:", collectionId, beatId);
+    //commitToCollection(beatId, collectionId);
+  }
+
   const handleBeatSelection = (beat: Beat) => {
     console.log("beat selected:", beat);
     setSelectedBeat(beat);
@@ -128,9 +136,10 @@ function App() {
   if (error) return <div className="flex items-center justify-center h-screen">Error: {error.message}</div>;
 
   return (
+    <Router>
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
     <div className="flex h-screen bg-gray-100">
-      <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} />
+      <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
           <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
@@ -142,26 +151,43 @@ function App() {
           <button onClick={handleAddToCollection}>Add to Collection</button>
           <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
           <SortableContext items={beats.map(beat => beat.id.toString())} strategy={verticalListSortingStrategy}>
-          <BeatTable
-            beats={beats}
-            onBeatSelect={handleBeatSelection}
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            selectedBeat={selectedBeat}
-            setSelectedBeat={setSelectedBeat}
-            fetchData={fetchData}
-            onBeatsChange={handleBeatsChange}
-            onAddBeatToCollection={handleAddToCollection}
-            columnVisibility={columnVisibility}
-            setColumnVisibility={setColumnVisibility}
-            onDragEnd={handleDragEnd}
-          />
+          <Routes>
+            {/* default route for main beat table */}
+            <Route 
+            path="/" 
+            element={
+            <BeatTable
+              beats={beats}
+              onBeatSelect={handleBeatSelection}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
+              selectedBeat={selectedBeat}
+              setSelectedBeat={setSelectedBeat}
+              fetchData={fetchData}
+              onBeatsChange={handleBeatsChange}
+              onAddBeatToCollection={handleAddToCollection}
+              columnVisibility={columnVisibility}
+              setColumnVisibility={setColumnVisibility}
+              onDragEnd={handleDragEnd}
+              />
+            }
+            />
+
+<Route 
+                    path="/collection/:id" 
+                    element={<BeatCollTable />}
+                  />
+
+
+          </Routes>
+          
           </SortableContext>
         </main>
       </div>
     </div>
     <DragOverlay>{/* Render dragged item */}</DragOverlay>
     </DndContext>
+    </Router>
   );
 }
 

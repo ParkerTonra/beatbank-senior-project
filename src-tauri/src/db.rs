@@ -93,6 +93,49 @@ pub fn add_beat_to_collection(conn: &mut SqliteConnection, collection_id: i32, b
         .map(|_| ())
 }
 
+pub fn get_beat_collection(conn: &mut SqliteConnection, id: i32) -> Result<BeatCollection, diesel::result::Error> {
+    use crate::schema::beat_collection;
+    beat_collection::table
+        .filter(beat_collection::dsl::id.eq(id))
+        .select((
+            beat_collection::dsl::id,
+            beat_collection::dsl::set_name,
+            beat_collection::dsl::venue,
+            beat_collection::dsl::city,
+            beat_collection::dsl::state_name,
+            beat_collection::dsl::date_played,
+            beat_collection::dsl::date_created,
+        ))
+        .first::<BeatCollection>(conn)
+}
+
+pub fn get_beats_in_collection(conn: &mut SqliteConnection, collection_id: i32) -> Result<Vec<Beat>, diesel::result::Error> {
+    use crate::schema::set_beat;
+    use crate::schema::beats;
+    set_beat::table
+        .filter(set_beat::dsl::beat_collection_id.eq(collection_id))
+        .inner_join(beats::table)
+        .select((
+            beats::dsl::id,
+            beats::dsl::title,
+            beats::dsl::artist.nullable(),
+            beats::dsl::album.nullable(),
+            beats::dsl::genre.nullable(),
+            beats::dsl::year.nullable(),
+            beats::dsl::track_number.nullable(),
+            beats::dsl::duration.nullable(),
+            beats::dsl::composer.nullable(),
+            beats::dsl::lyricist.nullable(),
+            beats::dsl::cover_art.nullable(),
+            beats::dsl::comments.nullable(),
+            beats::dsl::file_path,
+            beats::dsl::bpm.nullable(),
+            beats::dsl::musical_key.nullable(),
+            beats::dsl::date_created,
+        ))
+        .load::<Beat>(conn)
+}
+
 // pub fn get_all_beats(conn: &mut SqliteConnection) -> QueryResult<Vec<Beat>> {
 //     use crate::schema::beats;
 //     beats::table.load::<Beat>(conn)

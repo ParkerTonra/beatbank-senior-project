@@ -87,6 +87,18 @@ fn new_beat_collection(
 }
 
 #[tauri::command]
+fn get_beat_collection(state: State<AppState>, id: i32) -> Result<BeatCollection, String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::get_beat_collection(&mut *conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_beats_in_collection(state: State<AppState>, id: i32) -> Result<Vec<Beat>, String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::get_beats_in_collection(&mut *conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn delete_beat_collection(state: State<AppState>, id: i32) -> Result<(), String> {
     let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
     db::delete_beat_collection(&mut *conn, id).map_err(|e| e.to_string())?;
@@ -139,6 +151,8 @@ fn main() {
             fetch_collections,
             delete_beat_collection,
             add_beat_to_collection,
+            get_beat_collection,
+            get_beats_in_collection,
             store::load_settings, 
             store::save_settings, 
             store::get_settings_path
