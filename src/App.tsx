@@ -54,11 +54,13 @@ function App() {
   };
 
   const handleAddToCollection = async (collectionId: number) => {
+    console.log("handleAddToCollection:", collectionId);
     if (!selectedBeat) {
       message('Please select a beat first.', { title: 'Error', type: 'error' });
       return;
     }
     const beatId = selectedBeat.id;
+    console.log("beatId:", beatId);
     try {
       console.log(`Adding beat ${beatId} to collection ${collectionId}`);
       await invoke('add_beat_to_collection', { beatId, collectionId });
@@ -148,7 +150,6 @@ function App() {
           <h2>Selected Beat : {selectedBeat ? selectedBeat.title : 'None'}</h2>
           <SettingsDropdown sets={beatCollections} onAddToCollection={handleAddToCollection} />
           <button onClick={handleThemeChange}>Toggle Theme</button>
-          <button onClick={handleAddToCollection}>Add to Collection</button>
           <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
           <SortableContext items={beats.map(beat => beat.id.toString())} strategy={verticalListSortingStrategy}>
           <Routes>

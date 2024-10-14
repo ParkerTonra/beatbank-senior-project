@@ -51,6 +51,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
         className="text-white font-bold py-2 px-2 rounded flex items-center bg-blue-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-purple-600"
       >
         <Settings size={20} />
+        Add to collection
       </button>
       {isOpen && (
         <div
