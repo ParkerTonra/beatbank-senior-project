@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   useReactTable,
   flexRender,
   getCoreRowModel,
   RowSelectionState,
-  VisibilityState,
-  Updater,
   ColumnResizeMode,
   ColumnSizingState,
 } from "@tanstack/react-table";
@@ -43,6 +41,8 @@ interface BeatTableProps {
   setSelectedBeat: React.Dispatch<React.SetStateAction<Beat | null>>;
   fetchData: () => void;
   onBeatsChange: (newBeats: Beat[]) => void;
+  columnVisibility: ColumnVis;
+  setColumnVisibility: (columnVis: ColumnVis) => void;
   saveRowOrder?: (beatsToSave: Beat[]) => Promise<void>; // TODO: make this mandatory and work for sets as well.
   onAddBeatToCollection: (beatId: number, collectionId: number) => void;
   onDragEnd: (event: DragEndEvent) => void;
@@ -103,13 +103,13 @@ function BeatTable({
     setRowSelection((prev) => {
       if (isCtrlPressed) {
         // Toggle the selected row
-        const newSelection = { ...prev };
+        const newSelection: RowSelectionState = { ...prev };
         newSelection[rowId] = !newSelection[rowId];
         setLastSelectedRow(rowId);
         return newSelection;
       } else if (isShiftPressed && lastSelectedRow) {
         // Select all rows between last selected and current
-        const newSelection = { ...prev };
+        const newSelection: RowSelectionState = { ...prev };
         const rowIds = tableInstance.getRowModel().rows.map((row) => row.id);
         const startIndex = rowIds.indexOf(lastSelectedRow);
         const endIndex = rowIds.indexOf(rowId);
@@ -126,7 +126,7 @@ function BeatTable({
         setLastSelectedRow(rowId);
         // get the beat object from the rowId
         onBeatSelect(beat);
-        return { [rowId]: true };
+        return { [rowId]: true } as RowSelectionState;
       }
     });
   };
@@ -140,19 +140,6 @@ function BeatTable({
     () => beats.map(({ id }) => id),
     [beats]
   );
-
-  const handleColumnVisibilityChange = (
-    updaterOrValue: Updater<VisibilityState>
-  ) => {
-    console.log("handleColumnVisibilityChange:", updaterOrValue);
-    setColumnVisibility((prev) => {
-      if (typeof updaterOrValue === "function") {
-        const newState = updaterOrValue(prev as VisibilityState);
-        return newState as ColumnVis;
-      }
-      return updaterOrValue as ColumnVis;
-    });
-  };
 
   const tableInstance = useReactTable<Beat>({
     columns: finalColumnDef,
@@ -170,7 +157,7 @@ function BeatTable({
     },
     enableRowSelection: true,
     enableMultiRowSelection: true,
-    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onColumnVisibilityChange: setColumnVisibility,
   });
 
   const handleDragEnd = (event: DragEndEvent) => {

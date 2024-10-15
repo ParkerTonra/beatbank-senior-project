@@ -15,6 +15,9 @@
       "dialog": {
         "all": true
       },
+      "fs": {
+        "readDir": true
+      },
       "shell": {
         "all": false,
         "open": true

@@ -144,7 +144,6 @@ function App() {
 
   console.log("beatCollections:", beatCollections);
 
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
   if (error) return <div className="flex items-center justify-center h-screen">Error: {error.message}</div>;
 
   return (
@@ -159,8 +158,10 @@ function App() {
               <h2>Current Theme: {theme}</h2>
               <h2>Selected Beat : {selectedBeat ? selectedBeat.title : 'None'}</h2>
               <SettingsDropdown sets={beatCollections} handleAddToCollBtnClick={handleAddToCollBtnClick} />
-              <button onClick={handleThemeChange}>Toggle Theme</button>
-              <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
+              <div className="w-full flex justify-center">
+            <button onClick={handleThemeChange}>Toggle Theme</button>
+              </div>
+          <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
               <SortableContext items={beats.map(beat => beat.id.toString())} strategy={verticalListSortingStrategy}>
                 <Routes>
                   {/* default route for main beat table */}
