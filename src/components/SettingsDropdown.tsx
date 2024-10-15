@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronRight, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api";
-import { BeatCollection } from "../bindings";
+import { Beat, BeatCollection } from "../bindings";
 
 interface SettingsDropdownProps {
   sets: BeatCollection[];
   handleAddToCollBtnClick: (collectionId: number) => void;
+  selectedBeat: Beat | null;
 }
 
 const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
   sets,
   handleAddToCollBtnClick,
+  selectedBeat
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
@@ -45,14 +47,22 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
   };
 
   return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
-      <button
-        onClick={toggleDropdown}
-        className="text-white font-bold py-2 px-2 rounded flex items-center bg-blue-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-purple-600"
-      >
+    <div className="relative inline-block text-left" ref={dropdownRef}>      <button
+      onClick={toggleDropdown}
+      className="flex-row text-white font-bold rounded items-center bg-blue-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-purple-600"
+    >
+      <div className="flex gap-2 items-center justify-center">
         <Settings size={20} />
-        Add to collection
-      </button>
+        Track Settings
+
+      </div>
+      <div className="text-sm justify-center italic w-52 whitespace-nowrap overflow-hidden text-ellipsis">
+  selected: <span>{selectedBeat ? selectedBeat.title : 'None'}</span>
+</div>
+
+      {/* <h2>Selected Beat : {selectedBeat ? selectedBeat.title : 'None'}</h2> */}
+    </button>
+
       {isOpen && (
         <div
           className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
@@ -72,8 +82,8 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
               <span>Add to Set</span>
               <ChevronRight size={16} />
               {isSubMenuOpen && (
-                <div 
-                  className="absolute left-full top-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5" 
+                <div
+                  className="absolute left-full top-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
                   style={{ zIndex: 1001 }}
                 >
                   <div className="py-1" role="menu" aria-orientation="vertical">
