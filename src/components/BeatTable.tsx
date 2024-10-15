@@ -43,8 +43,6 @@ interface BeatTableProps {
   setSelectedBeat: React.Dispatch<React.SetStateAction<Beat | null>>;
   fetchData: () => void;
   onBeatsChange: (newBeats: Beat[]) => void;
-  columnVisibility: ColumnVis;
-  setColumnVisibility: React.Dispatch<React.SetStateAction<ColumnVis>>;
   saveRowOrder?: (beatsToSave: Beat[]) => Promise<void>; // TODO: make this mandatory and work for sets as well.
   onAddBeatToCollection: (beatId: number, collectionId: number) => void;
   onDragEnd: (event: DragEndEvent) => void;
@@ -62,8 +60,6 @@ function BeatTable({
   setSelectedBeat,
   fetchData,
   onBeatsChange,
-  columnVisibility,
-  setColumnVisibility,
 }: BeatTableProps) {
   // row selection state
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -175,10 +171,6 @@ function BeatTable({
     enableRowSelection: true,
     enableMultiRowSelection: true,
     onColumnVisibilityChange: handleColumnVisibilityChange,
-    // uncomment for descriptive logging of table state
-    // debugTable: true,
-    // debugHeaders: true,
-    // debugColumns: true,
   });
 
   const handleDragEnd = (event: DragEndEvent) => {

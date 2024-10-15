@@ -32,8 +32,6 @@ const BeatCollectionComponent: React.FC = () => {
         fetchData={() => {}}
         onBeatsChange={() => {}}
         onAddBeatToCollection={() => {}}
-        columnVisibility={{}}
-        setColumnVisibility={() => {}}
         onDragEnd={() => {}}
       />
     </div>

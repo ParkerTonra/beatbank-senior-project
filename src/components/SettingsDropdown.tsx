@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronRight, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api";
 import { BeatCollection } from "../bindings";

@@ -77,8 +77,6 @@ const BeatCollPage: React.FC<BeatCollProps> = ({
           selectedBeat={selectedBeat}
           setSelectedBeat={setSelectedBeat}
           onBeatsChange={handleBeatsChange}
-          columnVisibility={columnVisibility}
-          setColumnVisibility={setColumnVisibility}
           //TODO: saveSetRowOrder={saveSetRowOrder}
         />
       )}

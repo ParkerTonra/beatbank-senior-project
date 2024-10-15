@@ -1,4 +1,3 @@
-import React from 'react';
 import { useDroppable } from "@dnd-kit/core";
 import { BeatCollection } from "../bindings";
 import { Link } from 'react-router-dom';
