@@ -94,8 +94,11 @@ fn get_beat_collection(state: State<AppState>, id: i32) -> Result<BeatCollection
 
 #[tauri::command]
 fn get_beats_in_collection(state: State<AppState>, id: i32) -> Result<Vec<Beat>, String> {
+    println!("getting beats in collection");
     let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
     db::get_beats_in_collection(&mut *conn, id).map_err(|e| e.to_string())
+    // print the result
+
 }
 
 #[tauri::command]

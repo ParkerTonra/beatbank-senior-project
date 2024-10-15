@@ -60,6 +60,8 @@ function BeatTable({
   setSelectedBeat,
   fetchData,
   onBeatsChange,
+  columnVisibility,
+  setColumnVisibility,
 }: BeatTableProps) {
   // row selection state
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});

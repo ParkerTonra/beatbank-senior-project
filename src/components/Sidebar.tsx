@@ -72,18 +72,16 @@ const Sidebar: React.FC<SidebarProps> = ({ collections, onDrop, onAddBeatToColle
             </Link>
           </li>
           {beatCollections.map((collection) => (
-            <li key={collection.id}>
-              <Link
-                to={`/collection/${collection.id}`}
-                className="block w-full text-left p-2 bg-gray-700 hover:bg-gray-600 rounded"
-              >
-                <DroppableCollection 
-              key={collection.id} 
-              collection={collection} 
-              onAddBeatToCollection={onAddBeatToCollection} 
-            />
-              </Link>
-            </li>
+            <Link
+            to={`/collection/${collection.id}`}
+            className="block w-full text-left p-2 bg-gray-700 hover:bg-gray-600 rounded"
+          >
+            <DroppableCollection 
+          key={collection.id} 
+          collection={collection} 
+          onAddBeatToCollection={onAddBeatToCollection} 
+        />
+          </Link>
           ))}
         </ul>
       </div>
