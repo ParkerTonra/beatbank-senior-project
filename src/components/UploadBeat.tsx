@@ -2,6 +2,7 @@ import { open } from '@tauri-apps/api/dialog';
 import { invoke } from '@tauri-apps/api/tauri';
 import { useState } from 'react';
 import { Beat } from './../bindings';
+import { readDir } from "@tauri-apps/api/fs";
 
 interface UploadBeatProps {
   fetchData: () => void;
@@ -31,6 +32,55 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
       setUploadStatus(prevStatus => prevStatus + `\nError deleting beat: ${error}`);
     }
   };
+
+  async function processEntries(entries) {
+    const promises = [];
+    const filePaths = [];
+    for (const filepath of entries) {
+      if (filepath.children) {
+        await processEntries(filepath.children);
+      } else {
+        filePaths.push(filepath.path)
+        const validExtensions = ['flac', 'wav', 'mp3', 'ogg', 'm4a', 'aac', 'aiff', 'wma'];
+        const extension = filepath.name.split(".").pop();
+        if (validExtensions.indexOf(extension) >= 0) {
+          setSelectedFiles(filePaths);
+          promises.push(invoke('add_beat', {
+            title: filepath.name || 'Unknown', // Use filename as title
+            filePath: filepath.path,
+          }));
+        }
+      }
+    }
+    Promise.all(promises).then((values) => {
+      fetchData();
+      setUploadStatus(values.join("\n"));
+    }, function(err) {
+      console.error(err)
+    });
+  }
+
+  const handleFolderUpload = async () => {
+    try {
+      const filePaths = await open({
+        directory: true,
+        recursive: true,
+        multiple: true,
+      });
+
+      if (filePaths && filePaths.length > 0) {
+        // Upload each file
+        for (const filePath of (Array.isArray(filePaths) ? filePaths : [filePaths])) {
+          const entries = await readDir(filePath);
+          await processEntries(entries);
+          fetchData();
+        }
+      }
+    } catch (error) {
+      console.error("Error selecting file:", error);
+      setUploadStatus(`Error selecting file: ${error}`);
+    }
+  }
   
   const handleFileUpload = async () => {
     try {
@@ -45,7 +95,6 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
 
       if (filePaths && filePaths.length > 0) {
         setSelectedFiles(Array.isArray(filePaths) ? filePaths : [filePaths]);
-        console.log("Selected files:", filePaths);
 
         // Upload each file
         for (const filePath of (Array.isArray(filePaths) ? filePaths : [filePaths])) {
@@ -54,7 +103,6 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
               title: filePath.split('/').pop() || 'Unknown', // Use filename as title
               filePath: filePath,
             });
-            console.log(result);
             fetchData();
             setUploadStatus(prevStatus => prevStatus + `\n${result}`);
           } catch (error) {
@@ -71,26 +119,35 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
   
 
   return (
-    <div>
-      <button onClick={handleFileUpload}>Upload a beat</button>
-      <button onClick={handleFileDelete}>Delete</button>
-      <button onClick={fetchData}>Refresh</button>
-      {selectedFiles.length > 0 && (
+    <div className="my-2 flex flex-col">
+      <div className="w-full flex justify-center">
+        <button onClick={handleFileUpload}>Upload a beat</button>
+        <button onClick={handleFolderUpload} className="ml-2">Upload a folder</button>
+        <button onClick={handleFileDelete}className="ml-2">Delete</button>
+        <button onClick={fetchData}className="ml-2">Refresh</button>
+      </div>
+      <div className="max-h-[200px] overflow-y-auto my-4">
         <div>
-          <p>Selected files:</p>
-          <ul>
-            {selectedFiles.map((file, index) => (
-              <li key={index}>{file}</li>
-            ))}
-          </ul>
+          {selectedFiles.length > 0 && (
+            <div>
+              <p className="font-bold">Selected files:</p>
+              <ul>
+                {selectedFiles.map((file, index) => (
+                  <li key={index}>{file}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-      )}
-      {uploadStatus && (
-        <div>
-          <p>Upload Status:</p>
-          <pre>{uploadStatus}</pre>
+        <div className="mt-2">
+          {uploadStatus && (
+            <div>
+              <p className="font-bold">Upload Status:</p>
+              <pre>{uploadStatus}</pre>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
