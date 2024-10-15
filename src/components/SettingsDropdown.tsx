@@ -5,12 +5,12 @@ import { BeatCollection } from "../bindings";
 
 interface SettingsDropdownProps {
   sets: BeatCollection[];
-  onAddToCollection: (collectionId: number) => void;
+  handleAddToCollBtnClick: (collectionId: number) => void;
 }
 
 const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
   sets,
-  onAddToCollection,
+  handleAddToCollBtnClick,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
@@ -35,7 +35,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
   const toggleDropdown = () => setIsOpen(!isOpen);
 
   const handleAddToSet = (collectionId: number) => {
-    onAddToCollection(collectionId);
+    handleAddToCollBtnClick(collectionId);
     setIsOpen(false);
     setIsSubMenuOpen(false);
   };
@@ -81,7 +81,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
                       <div
                         key={set.id}
                         className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
-                        onClick={() => handleAddToSet(set)}
+                        onClick={() => handleAddToSet(set.id)}
                       >
                         {set.set_name}
                       </div>

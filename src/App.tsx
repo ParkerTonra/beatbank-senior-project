@@ -23,7 +23,7 @@ function App() {
   const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null);
   const [theme, setTheme] = useState<string>('light');
   const [settingsPath, setSettingsPath] = useState<string>('');
-  
+
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -35,16 +35,19 @@ function App() {
     const { active, over } = event;
 
     if (active && over) {
-      if (String(over.id).startsWith('collection-')) {
-        // Handle dragging to collection
-        const beatId = active.id;
-        const collectionId = Number(String(over.id).split('-')[1]);
-        handleAddToCollection(collectionId);
+      console.log("Active:", active);
+      console.log("Over:", over);
+      
+      if (over.id && typeof over.id === 'string' && over.id.startsWith('collection-')) {
+        const beatId = Number(active.id);
+        const collectionId = Number(over.id.split('-')[1]);
+        console.log(`Attempting to add beat ${beatId} to collection ${collectionId}`);
+        handleAddToCollection(collectionId, beatId);
       } else {
         // Handle sorting within the table
-        const oldIndex = beats.findIndex(beat => beat.id.toString() === active.id);
-        const newIndex = beats.findIndex(beat => beat.id.toString() === over.id);
-        
+        const oldIndex = beats.findIndex(beat => beat.id === beatId);
+        const newIndex = beats.findIndex(beat => beat.id === Number(over.id));
+
         if (oldIndex !== newIndex) {
           const newBeats = arrayMove(beats, oldIndex, newIndex);
           setBeats(newBeats);
@@ -53,14 +56,20 @@ function App() {
     }
   };
 
-  const handleAddToCollection = async (collectionId: number) => {
-    console.log("handleAddToCollection:", collectionId);
+  const handleAddToCollBtnClick = async (collectionId: number) => {
+    console.log("handleAddToCollBtnClick:", collectionId);
     if (!selectedBeat) {
       message('Please select a beat first.', { title: 'Error', type: 'error' });
       return;
     }
-    const beatId = selectedBeat.id;
-    console.log("beatId:", beatId);
+    let beatId = selectedBeat.id;
+    console.log("Current beat id:", beatId, "current set id:", collectionId);
+    await invoke('add_beat_to_collection', { beatId, collectionId });
+    // Refresh data or update state as needed
+    fetchData();
+  };
+
+  const handleAddToCollection = async (collectionId: number, beatId: number) => {
     try {
       console.log(`Adding beat ${beatId} to collection ${collectionId}`);
       await invoke('add_beat_to_collection', { beatId, collectionId });
@@ -69,7 +78,8 @@ function App() {
     } catch (error) {
       console.error('Error adding beat to collection:', error);
     }
-  }
+  };
+
   //TODO: audio player
   // const [playThisBeat, setPlayThisBeat] = useState<Beat | null>(null);
 
@@ -112,7 +122,7 @@ function App() {
     console.log("Theme changed to:", newTheme); // Log the new theme for debugging purposes
   };
 
-  
+
 
   if (showSplashScreen) {
     return <SplashScreen closeSplashScreen={() => setShowSplashScreen(false)} />;
@@ -139,55 +149,55 @@ function App() {
 
   return (
     <Router>
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
-          <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
-          {/* debug info */}
-          <h2>Current Theme: {theme}</h2>
-          <h2>Selected Beat : {selectedBeat ? selectedBeat.title : 'None'}</h2>
-          <SettingsDropdown sets={beatCollections} onAddToCollection={handleAddToCollection} />
-          <button onClick={handleThemeChange}>Toggle Theme</button>
-          <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
-          <SortableContext items={beats.map(beat => beat.id.toString())} strategy={verticalListSortingStrategy}>
-          <Routes>
-            {/* default route for main beat table */}
-            <Route 
-            path="/" 
-            element={
-            <BeatTable
-              beats={beats}
-              onBeatSelect={handleBeatSelection}
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
-              selectedBeat={selectedBeat}
-              setSelectedBeat={setSelectedBeat}
-              fetchData={fetchData}
-              onBeatsChange={handleBeatsChange}
-              onAddBeatToCollection={handleAddToCollection}
-              columnVisibility={columnVisibility}
-              setColumnVisibility={setColumnVisibility}
-              onDragEnd={handleDragEnd}
-              />
-            }
-            />
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="flex h-screen bg-gray-100">
+          <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
+              <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
+              {/* debug info */}
+              <h2>Current Theme: {theme}</h2>
+              <h2>Selected Beat : {selectedBeat ? selectedBeat.title : 'None'}</h2>
+              <SettingsDropdown sets={beatCollections} handleAddToCollBtnClick={handleAddToCollBtnClick} />
+              <button onClick={handleThemeChange}>Toggle Theme</button>
+              <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
+              <SortableContext items={beats.map(beat => beat.id.toString())} strategy={verticalListSortingStrategy}>
+                <Routes>
+                  {/* default route for main beat table */}
+                  <Route
+                    path="/"
+                    element={
+                      <BeatTable
+                        beats={beats}
+                        onBeatSelect={handleBeatSelection}
+                        isEditing={isEditing}
+                        setIsEditing={setIsEditing}
+                        selectedBeat={selectedBeat}
+                        setSelectedBeat={setSelectedBeat}
+                        fetchData={fetchData}
+                        onBeatsChange={handleBeatsChange}
+                        onAddBeatToCollection={handleAddToCollection}
+                        columnVisibility={columnVisibility}
+                        setColumnVisibility={setColumnVisibility}
+                        onDragEnd={handleDragEnd}
+                      />
+                    }
+                  />
 
-<Route 
-                    path="/collection/:id" 
+                  <Route
+                    path="/collection/:id"
                     element={<BeatCollTable />}
                   />
 
 
-          </Routes>
-          
-          </SortableContext>
-        </main>
-      </div>
-    </div>
-    <DragOverlay>{/* Render dragged item */}</DragOverlay>
-    </DndContext>
+                </Routes>
+
+              </SortableContext>
+            </main>
+          </div>
+        </div>
+        <DragOverlay>{/* Render dragged item */}</DragOverlay>
+      </DndContext>
     </Router>
   );
 }

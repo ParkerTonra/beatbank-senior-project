@@ -21,7 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collections, onDrop, onAddBeatToColle
   });
 
   const style = {
-    color: isOver ? 'green' : undefined,
+    backgroundColor: isOver ? 'rgba(0, 255, 0, 0.1)' : undefined,
   };
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collections, onDrop, onAddBeatToColle
   }
 
   return (
-    <div className="w-64 h-screen bg-gray-800 text-white p-4 flex flex-col">
+    <div className="w-64 h-screen bg-gray-800 text-white p-4 flex flex-col" ref={setNodeRef} style={style}>
       <h2 className="text-xl font-bold mb-4">Beat Collections</h2>
       <form onSubmit={handleNewBeatCollection} className="mb-4">
         <input
@@ -77,7 +77,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collections, onDrop, onAddBeatToColle
                 to={`/collection/${collection.id}`}
                 className="block w-full text-left p-2 bg-gray-700 hover:bg-gray-600 rounded"
               >
-                <DroppableCollection collection={collection} onDrop={onDrop} />
+                <DroppableCollection 
+              key={collection.id} 
+              collection={collection} 
+              onAddBeatToCollection={onAddBeatToCollection} 
+            />
               </Link>
             </li>
           ))}
