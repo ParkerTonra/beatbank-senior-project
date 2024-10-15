@@ -54,7 +54,7 @@ pub struct NewBeat<'a> {
     pub file_path: &'a str,
     pub bpm: Option<i32>,
     pub musical_key: Option<&'a str>,
-    pub date_created: &'a str,
+    pub date_created: NaiveDateTime,
 }
 
 #[derive(Queryable, Selectable, Debug)]
