@@ -71,7 +71,6 @@ function App() {
 
   console.log("beatCollections:", beatCollections);
 
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
   if (error) return <div className="flex items-center justify-center h-screen">Error: {error.message}</div>;
 
   return (
@@ -81,7 +80,9 @@ function App() {
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
           <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
           <h2>Current Theme: {theme}</h2>
-          <button onClick={handleThemeChange}>Toggle Theme</button>
+          <div className="w-full flex justify-center">
+            <button onClick={handleThemeChange}>Toggle Theme</button>
+          </div>
           <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
           <BeatTable
             beats={beats}
