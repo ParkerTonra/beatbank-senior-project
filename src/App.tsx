@@ -92,7 +92,6 @@ function App() {
     beatCollections,
     fetchData,
     columnVisibility,
-    loading,
     error,
     setBeats,
     setColumnVisibility,

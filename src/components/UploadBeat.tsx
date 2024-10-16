@@ -2,7 +2,7 @@ import { open } from '@tauri-apps/api/dialog';
 import { invoke } from '@tauri-apps/api/tauri';
 import { useState } from 'react';
 import { Beat } from './../bindings';
-import { readDir } from "@tauri-apps/api/fs";
+import { FileEntry, readDir } from "@tauri-apps/api/fs";
 
 interface UploadBeatProps {
   fetchData: () => void;
@@ -31,7 +31,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
     }
   };
 
-  async function processEntries(entries) {
+  async function processEntries(entries: FileEntry[]) {
     const promises = [];
     const filePaths = [];
     for (const filepath of entries) {
@@ -40,7 +40,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
       } else {
         filePaths.push(filepath.path)
         const validExtensions = ['flac', 'wav', 'mp3', 'ogg', 'm4a', 'aac', 'aiff', 'wma'];
-        const extension = filepath.name.split(".").pop();
+        const extension = (filepath.name || "").split(".").pop() || "";
         if (validExtensions.indexOf(extension) >= 0) {
           setSelectedFiles(filePaths);
           promises.push(invoke('add_beat', {
