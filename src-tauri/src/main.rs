@@ -64,13 +64,13 @@ fn add_beat(
         file_path: &file_path,
         bpm: None,
         musical_key: None,
-        date_created: &chrono::Utc::now().naive_utc().to_string(),
+        date_created: chrono::Utc::now().naive_utc(),
     };
     let inserted_beat: Beat = diesel::insert_into(crate::schema::beats::dsl::beats)
         .values(&new_beat)
         .get_result(&mut *conn)
         .map_err(|e| e.to_string())?;
-    
+
     // Analyze and update the beat synchronously
     analyze_and_update_beat(inserted_beat.id, file_path.clone(), &mut conn)?;
 
@@ -79,8 +79,8 @@ fn add_beat(
 
 
 fn analyze_and_update_beat(
-    beat_id: i32, 
-    file_path: String, 
+    beat_id: i32,
+    file_path: String,
     conn: &mut diesel::SqliteConnection // Pass connection as mutable reference
 ) -> Result<(), String> {
     use crate::audio_analysis::analyze_audio;
@@ -109,7 +109,7 @@ fn analyze_and_update_beat(
             return Err(e.to_string()); // Return the error as a Result
         }
     }
-    
+
     Ok(())
 }
 
@@ -146,6 +146,21 @@ fn new_beat_collection(
 }
 
 #[tauri::command]
+fn get_beat_collection(state: State<AppState>, id: i32) -> Result<BeatCollection, String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::get_beat_collection(&mut *conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_beats_in_collection(state: State<AppState>, id: i32) -> Result<Vec<Beat>, String> {
+    println!("getting beats in collection");
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::get_beats_in_collection(&mut *conn, id).map_err(|e| e.to_string())
+    // print the result
+
+}
+
+#[tauri::command]
 fn delete_beat_collection(state: State<AppState>, id: i32) -> Result<(), String> {
     let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
     db::delete_beat_collection(&mut *conn, id).map_err(|e| e.to_string())?;
@@ -165,9 +180,21 @@ fn fetch_collections(state: State<AppState>) -> Result<String, String> {
 }
 
 #[tauri::command]
+fn add_beat_to_collection(
+    state: State<AppState>,
+    collection_id: i32,
+    beat_id: i32,
+) -> Result<(), String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::add_beat_to_collection(&mut *conn, collection_id, beat_id).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+
+#[tauri::command]
 async fn analyze_audio_command(file_path: String) -> Result<(String, f64), String> {
     use crate::audio_analysis::analyze_audio;
-    
+
     // Call your analyze_audio function and handle the result
     match analyze_audio(&file_path) {
         Ok((key, tempo)) => Ok((key.to_string(), tempo)),  // Convert key to String
@@ -224,7 +251,10 @@ fn main() {
             new_beat_collection, 
             fetch_collections,
             delete_beat_collection,
-            store::load_settings, 
+            add_beat_to_collection,
+            get_beat_collection,
+            get_beats_in_collection,
+            store::load_settings,
             store::save_settings, 
             store::get_settings_path,
             analyze_audio_command
