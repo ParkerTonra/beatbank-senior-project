@@ -8,8 +8,6 @@ import {
   ColumnSizingState,
   OnChangeFn,
   VisibilityState,
-  OnChangeFn,
-  VisibilityState,
 } from "@tanstack/react-table";
 import { createColumnDef } from "./../models/ColumnDef.tsx";
 import { Beat, ColumnVis, EditThisBeat } from "./../bindings.ts";
