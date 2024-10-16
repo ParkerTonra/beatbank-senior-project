@@ -53,7 +53,8 @@ function App() {
           setBeats(newBeats);
         }
       }
-    }
+    } else {
+      console.log("Drag ended outside of the sidebar");
   };
 
   const handleAddToCollBtnClick = async (collectionId: number) => {
@@ -150,7 +151,7 @@ function App() {
     <Router>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="flex h-screen bg-gray-100">
-          <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} />
+          <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} handleDragEnd={handleDragEnd} />
           <div className="flex-1 flex flex-col overflow-hidden">
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
               <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>

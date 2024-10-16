@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronRight, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api";
 import { Beat, BeatCollection } from "../bindings";
+import EditBeatCard from "./EditBeatCard";
 
 interface SettingsDropdownProps {
   sets: BeatCollection[];
@@ -46,6 +47,17 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
     await invoke("quit_app");
   };
 
+  //opens up EditBeatCard as a popup
+  const handleEditBeat = async () => {
+    if (!selectedBeat) {
+      console.log("No beat selected");
+      return;
+    }
+    return (<EditBeatCard beat={selectedBeat} onClose={() => setIsOpen(false)} onSave={handleUpdateBeat}
+      
+        />);
+  }
+
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>      <button
       onClick={toggleDropdown}
@@ -79,7 +91,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
               onMouseEnter={() => setIsSubMenuOpen(true)}
               onMouseLeave={() => setIsSubMenuOpen(false)}
             >
-              <span>Add to Set</span>
+              <span>Add Beat to Set</span>
               <ChevronRight size={16} />
               {isSubMenuOpen && (
                 <div
@@ -99,6 +111,12 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
                   </div>
                 </div>
               )}
+            </div>
+            <div
+              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+              onClick={handleEditBeat}
+            >
+              Edit Beat
             </div>
             <div
               className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
