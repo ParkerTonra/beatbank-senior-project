@@ -32,7 +32,7 @@ pub struct Beat {
     pub cover_art: Option<String>,
     pub comments: Option<String>,
     pub file_path: String,
-    pub bpm: Option<i32>,
+    pub bpm: Option<f64>,
     pub musical_key: Option<String>,
     pub date_created: NaiveDateTime,
 }
@@ -52,7 +52,7 @@ pub struct NewBeat<'a> {
     pub cover_art: Option<&'a str>,
     pub comments: Option<&'a str>,
     pub file_path: &'a str,
-    pub bpm: Option<i32>,
+    pub bpm: Option<f64>,
     pub musical_key: Option<&'a str>,
     pub date_created: &'a str,
 }
