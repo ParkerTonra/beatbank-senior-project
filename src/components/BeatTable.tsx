@@ -6,8 +6,6 @@ import {
   RowSelectionState,
   ColumnResizeMode,
   ColumnSizingState,
-  OnChangeFn,
-  VisibilityState,
 } from "@tanstack/react-table";
 import { createColumnDef } from "./../models/ColumnDef.tsx";
 import { Beat, ColumnVis, EditThisBeat } from "./../bindings.ts";
@@ -158,7 +156,7 @@ function BeatTable({
     },
     enableRowSelection: true,
     enableMultiRowSelection: true,
-    onColumnVisibilityChange: setColumnVisibility as OnChangeFn<VisibilityState>,
+    onColumnVisibilityChange: setColumnVisibility,
     debugTable: true,
     debugHeaders: true,
     debugColumns: true,

@@ -14,7 +14,7 @@ function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null);
   const [theme, setTheme] = useState<string>('light');
-  const [_, setSettingsPath] = useState<string>('');
+  const [settingsPath, setSettingsPath] = useState<string>('');
   //TODO: audio player
   // const [playThisBeat, setPlayThisBeat] = useState<Beat | null>(null);
 
@@ -23,6 +23,7 @@ function App() {
     beatCollections,
     fetchData,
     columnVisibility,
+    loading,
     error,
     setBeats,
     setColumnVisibility,
