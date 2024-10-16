@@ -9,8 +9,6 @@ interface UploadBeatProps {
   selectedBeat: Beat | null;
 }
 
-
-
 const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [uploadStatus, setUploadStatus] = useState<string>('');
@@ -120,7 +118,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
 
   return (
     <div className="my-2 flex flex-col">
-      <div className="w-full flex justify-center">
+      <div className="w-full flex justify-center gap-5">
         <button onClick={handleFileUpload}>Upload a beat</button>
         <button onClick={handleFolderUpload} className="ml-2">Upload a folder</button>
         <button onClick={handleFileDelete}className="ml-2">Delete</button>

@@ -46,3 +46,8 @@ export type EditThisBeat = {
   duration?: number;
   artist?: string;
 }
+
+export type BeatInCollection = {
+  beat_id: number;
+  beat_collection_id: number;
+}

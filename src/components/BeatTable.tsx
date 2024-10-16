@@ -41,17 +41,21 @@ interface BeatTableProps {
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   selectedBeat: Beat | null;
   setSelectedBeat: React.Dispatch<React.SetStateAction<Beat | null>>;
-  fetchData: () => void;
+  fetchData?: () => void;
+  fetchSetData?: (id: number) => void;
   onBeatsChange: (newBeats: Beat[]) => void;
   columnVisibility: ColumnVis;
   setColumnVisibility: (columnVis: ColumnVis) => void;
   saveRowOrder?: (beatsToSave: Beat[]) => Promise<void>; // TODO: make this mandatory and work for sets as well.
+  onAddBeatToCollection: (beatId: number, collectionId: number) => void;
+  onDragEnd: (event: DragEndEvent) => void;
 }
 
 function BeatTable({
   beats,
   // TODO: audio player
   // onBeatPlay,
+  onAddBeatToCollection,
   onBeatSelect,
   isEditing,
   setIsEditing,
@@ -159,40 +163,45 @@ function BeatTable({
     enableRowSelection: true,
     enableMultiRowSelection: true,
     onColumnVisibilityChange: setColumnVisibility as OnChangeFn<VisibilityState>,
-    debugTable: true,
-    debugHeaders: true,
-    debugColumns: true,
-  });
+  })
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+
+
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    console.log('drag end.')
     const { active, over } = event;
-    if (active && over && active.id !== over.id) {
-      const newBeats = arrayMove(
-        beats,
-        beats.findIndex((beat) => beat.id === active.id),
-        beats.findIndex((beat) => beat.id === over.id)
-      );
-      
+
+    if (!active || !over) return;
+
+    const beatId = Number(active.id);
+    const overId = String(over.id);
+
+    if (overId.startsWith('collection-')) {
+      // A beat was dropped onto a collection
+      const collectionId = Number(overId.split('-')[1]);
+      onAddBeatToCollection(beatId, collectionId);
+    } else if (active.id !== over.id) {
+      // The beat was reordered within the table
+      const oldIndex = beats.findIndex(beat => beat.id === beatId);
+      const newIndex = beats.findIndex(beat => beat.id === Number(over.id));
+      const newBeats = arrayMove(beats, oldIndex, newIndex);
       onBeatsChange(newBeats);
-
-      
-
-      saveRowOrder(newBeats);
     }
   };
-
-  const saveRowOrder = async (beatsToSave: Beat[]) => {
-    const rowOrder = beatsToSave.map((beat, index) => ({
-      row_id: beat.id.toString(),
-      row_number: index + 1,
-    }));
-    try {
-      await invoke("save_row_order", { rowOrder });
-      console.log("Row order saved successfully");
-    } catch (error) {
-      console.error("Error saving row order:", error);
-    }
-  };
+//TODO: save row order
+  // const saveRowOrder = async (beatsToSave: Beat[]) => {
+  //   const rowOrder = beatsToSave.map((beat, index) => ({
+  //     row_id: beat.id.toString(),
+  //     row_number: index + 1,
+  //   }));
+  //   try {
+  //     await invoke("save_row_order", { rowOrder });
+  //     console.log("Row order saved successfully");
+  //   } catch (error) {
+  //     console.error("Error saving row order:", error);
+  //   }
+  // };
 
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -205,7 +214,7 @@ function BeatTable({
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-y-auto">
+    <div className="flex flex-col h-full w-full overflow-y-auto select-none">
       <DndContext
         collisionDetection={closestCenter}
         modifiers={[restrictToVerticalAxis]}
@@ -255,6 +264,8 @@ function BeatTable({
                   row={rowElement}
                   key={rowElement.id}
                   onRowSelection={handleRowSelection}
+                  onDragEnd={handleDragEnd}
+                  
                 />
               ))}
             </SortableContext>
@@ -308,7 +319,7 @@ function BeatTable({
                   .then((response) => {
                     console.log("Response from update_beat:", response);
                     console.log("Fetching updated data");
-                    fetchData();
+                    if (fetchData) fetchData();
                   })
                   .catch((error) => {
                     console.error("Error updating beat:", error);
@@ -321,5 +332,6 @@ function BeatTable({
     </div>
   );
 }
+
 
 export default BeatTable;
