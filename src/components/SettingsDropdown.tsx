@@ -61,7 +61,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>      <button
       onClick={toggleDropdown}
-      className="flex-row text-white font-bold rounded items-center bg-blue-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-purple-600"
+      className="flex-row text-white font-bold rounded items-center bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-purple-600"
     >
       <div className="flex gap-2 items-center justify-center">
         <Settings size={20} />
