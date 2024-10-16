@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import BeatTable from './BeatTable';
 import { useBeats } from '../hooks/useBeats';
-import { Beat, ColumnVis } from '../bindings';
+import { Beat } from '../bindings';
 
 const BeatCollectionComponent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -61,7 +61,7 @@ const BeatCollectionComponent: React.FC = () => {
         setIsEditing={setIsEditing}
         selectedBeat={selectedBeat}
         setSelectedBeat={setSelectedBeat}
-        fetchData={fetchSetData}
+        fetchSetData={fetchSetData}
         onBeatsChange={handleBeatsChange}
         columnVisibility={columnVisibility}
         setColumnVisibility={setColumnVisibility}

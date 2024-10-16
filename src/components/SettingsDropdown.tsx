@@ -53,7 +53,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
       console.log("No beat selected");
       return;
     }
-    return (<EditBeatCard beat={selectedBeat} onClose={() => setIsOpen(false)} onSave={handleUpdateBeat}
+    return (<EditBeatCard beat={selectedBeat} onClose={() => setIsOpen(false)} onSave={handleEditBeat}
       
         />);
   }

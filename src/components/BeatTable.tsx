@@ -6,6 +6,8 @@ import {
   RowSelectionState,
   ColumnResizeMode,
   ColumnSizingState,
+  OnChangeFn,
+  VisibilityState,
 } from "@tanstack/react-table";
 import { createColumnDef } from "./../models/ColumnDef.tsx";
 import { Beat, ColumnVis, EditThisBeat } from "./../bindings.ts";
@@ -39,7 +41,8 @@ interface BeatTableProps {
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   selectedBeat: Beat | null;
   setSelectedBeat: React.Dispatch<React.SetStateAction<Beat | null>>;
-  fetchData: () => void;
+  fetchData?: () => void;
+  fetchSetData?: (id: number) => void;
   onBeatsChange: (newBeats: Beat[]) => void;
   columnVisibility: ColumnVis;
   setColumnVisibility: (columnVis: ColumnVis) => void;
@@ -159,8 +162,11 @@ function BeatTable({
     },
     enableRowSelection: true,
     enableMultiRowSelection: true,
-    onColumnVisibilityChange: setColumnVisibility,
-  });
+    onColumnVisibilityChange: setColumnVisibility as OnChangeFn<VisibilityState>,
+  })
+
+
+
 
   const handleDragEnd = (event: DragEndEvent) => {
     console.log('drag end.')
@@ -183,19 +189,19 @@ function BeatTable({
       onBeatsChange(newBeats);
     }
   };
-
-  const saveRowOrder = async (beatsToSave: Beat[]) => {
-    const rowOrder = beatsToSave.map((beat, index) => ({
-      row_id: beat.id.toString(),
-      row_number: index + 1,
-    }));
-    try {
-      await invoke("save_row_order", { rowOrder });
-      console.log("Row order saved successfully");
-    } catch (error) {
-      console.error("Error saving row order:", error);
-    }
-  };
+//TODO: save row order
+  // const saveRowOrder = async (beatsToSave: Beat[]) => {
+  //   const rowOrder = beatsToSave.map((beat, index) => ({
+  //     row_id: beat.id.toString(),
+  //     row_number: index + 1,
+  //   }));
+  //   try {
+  //     await invoke("save_row_order", { rowOrder });
+  //     console.log("Row order saved successfully");
+  //   } catch (error) {
+  //     console.error("Error saving row order:", error);
+  //   }
+  // };
 
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -259,6 +265,7 @@ function BeatTable({
                   key={rowElement.id}
                   onRowSelection={handleRowSelection}
                   onDragEnd={handleDragEnd}
+                  
                 />
               ))}
             </SortableContext>
@@ -312,7 +319,7 @@ function BeatTable({
                   .then((response) => {
                     console.log("Response from update_beat:", response);
                     console.log("Fetching updated data");
-                    fetchData();
+                    if (fetchData) fetchData();
                   })
                   .catch((error) => {
                     console.error("Error updating beat:", error);
@@ -325,5 +332,6 @@ function BeatTable({
     </div>
   );
 }
+
 
 export default BeatTable;

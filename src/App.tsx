@@ -29,34 +29,7 @@ function App() {
     useSensor(MouseSensor),
     useSensor(TouchSensor)
   );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    console.log("Drag end event:", event);
-    const { active, over } = event;
-
-    if (active && over) {
-      console.log("Active:", active);
-      console.log("Over:", over);
-
-      if (over.id && typeof over.id === 'string' && over.id.startsWith('collection-')) {
-        const beatId = Number(active.id);
-        const collectionId = Number(over.id.split('-')[1]);
-        console.log(`Attempting to add beat ${beatId} to collection ${collectionId}`);
-        handleAddToCollection(collectionId, beatId);
-      } else {
-        // Handle sorting within the table
-        const oldIndex = beats.findIndex(beat => beat.id === beatId);
-        const newIndex = beats.findIndex(beat => beat.id === Number(over.id));
-
-        if (oldIndex !== newIndex) {
-          const newBeats = arrayMove(beats, oldIndex, newIndex);
-          setBeats(newBeats);
-        }
-      }
-    } else {
-      console.log("Drag ended outside of the sidebar");
-  };
-
+  
   const handleAddToCollBtnClick = async (collectionId: number) => {
     console.log("handleAddToCollBtnClick:", collectionId);
     if (!selectedBeat) {
@@ -74,10 +47,40 @@ function App() {
     try {
       console.log(`Adding beat ${beatId} to collection ${collectionId}`);
       await invoke('add_beat_to_collection', { beatId, collectionId });
-      // Refresh data or update state as needed
-      fetchData();
+      fetchData(); // Refresh data or update state as needed
     } catch (error) {
       console.error('Error adding beat to collection:', error);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    console.log('Drag End Event:', event);
+    const { active, over } = event;
+
+    if (!over) {
+      console.log('Dropped outside any droppable area');
+      return;
+    }
+
+    const activeType = active.data.current?.type;
+    const activeBeatId = active.data.current?.beatId;
+    const overId = over.id.toString();
+
+    console.log('Active ID:', active.id);
+    console.log('Active Data:', active.data.current);
+    console.log('Over ID:', over.id);
+
+    if (overId.startsWith('collection-') && activeType === 'beat') {
+      const collectionId = parseInt(overId.replace('collection-', ''), 10);
+      handleAddToCollection(collectionId, activeBeatId);
+    } else if (overId.startsWith('beat-') && activeType === 'beat') {
+      const oldIndex = beats.findIndex((beat) => `beat-${beat.id}` === active.id.toString());
+      const newIndex = beats.findIndex((beat) => `beat-${beat.id}` === overId);
+
+      if (oldIndex !== newIndex) {
+        const newBeats = arrayMove(beats, oldIndex, newIndex);
+        setBeats(newBeats);
+      }
     }
   };
 
@@ -148,8 +151,9 @@ function App() {
   if (error) return <div className="flex items-center justify-center h-screen">Error: {error.message}</div>;
 
   return (
-    <Router>
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <Router>
+      
         <div className="flex h-screen bg-gray-100">
           <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} handleDragEnd={handleDragEnd} />
           <div className="flex-1 flex flex-col overflow-hidden">
@@ -212,8 +216,9 @@ function App() {
           </div>
         </div>
         <DragOverlay>{/* Render dragged item */}</DragOverlay>
-      </DndContext>
+      
     </Router>
+    </DndContext>
   );
 }
 

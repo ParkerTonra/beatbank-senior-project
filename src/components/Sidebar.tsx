@@ -1,29 +1,25 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BeatCollection } from "./../bindings";
 import { DragEndEvent, useDroppable } from "@dnd-kit/core";
+import { Link } from 'react-router-dom';
 import DroppableCollection from "./DroppableCollection";
-import { useNavigate, Link } from 'react-router-dom';
 
 interface SidebarProps {
   collections: BeatCollection[];
-  onAddBeatToCollection: (collectionId: number) => void;
+  onAddBeatToCollection: (collectionId: number, beatId: number) => void;
   onDrop: (collectionId: number, beatId: number) => void;
   handleDragEnd: (event: DragEndEvent) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collections, onDrop, onAddBeatToCollection, handleDragEnd }) => {
-  const navigate = useNavigate();
+const Sidebar: React.FC<SidebarProps> = ({
+  collections,
+  onDrop,
+  onAddBeatToCollection,
+  handleDragEnd,
+}) => {
   const [title, setTitle] = useState("");
   const [beatCollections, setBeatCollections] = useState<BeatCollection[]>(collections);
-
-  const { isOver, setNodeRef } = useDroppable({
-    id: 'sidebar',
-  });
-
-  const style = {
-    backgroundColor: isOver ? 'rgba(0, 255, 0, 0.1)' : undefined,
-  };
 
   useEffect(() => {
     console.log("Received collections:", collections);
@@ -34,7 +30,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collections, onDrop, onAddBeatToColle
     event.preventDefault();
     if (title.trim()) {
       try {
-        const newCollection: BeatCollection = await invoke("new_beat_collection", { setName: title.trim() });
+        const newCollection: BeatCollection = await invoke("new_beat_collection", {
+          setName: title.trim(),
+        });
         console.log("New beat collection created:", newCollection);
         setBeatCollections([...beatCollections, newCollection]);
         setTitle(""); // Clear the input after successful creation
@@ -47,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collections, onDrop, onAddBeatToColle
   }
 
   return (
-    <div className="w-64 h-screen bg-gray-800 text-white p-4 flex flex-col" ref={setNodeRef} style={style}>
+    <div className="w-64 h-screen bg-gray-800 text-white p-4 flex flex-col">
       <h2 className="text-xl font-bold mb-4">Beat Collections</h2>
       <form onSubmit={handleNewBeatCollection} className="mb-4">
         <input
@@ -67,32 +65,22 @@ const Sidebar: React.FC<SidebarProps> = ({ collections, onDrop, onAddBeatToColle
       <div className="flex-1 overflow-y-auto">
         <h3 className="text-lg font-semibold mb-2">My sets:</h3>
         <ul className="space-y-2">
-
-          <Link to="/" className="block w-full text-left p-2 bg-gray-500 py-4 hover:bg-gray-600 rounded h-12 items-center justify-start">
-            <li>
+          <li className="block w-full text-left p-2 bg-gray-500 py-4 hover:bg-gray-600 rounded h-12 items-center justify-start">
+            <Link to="/">
               All Beats
-
-            </li>
-          </Link>
-          
-          {beatCollections.map((collection) => (
-            <Link
-            to={`/collection/${collection.id}`}
-            className="block w-full overflow-auto whitespace-nowrap text-left bg-gray-700 hover:bg-gray-600 rounded h-12 justify-center items-center"
-          >
-              <DroppableCollection
-                key={collection.id}
-                collection={collection}
-                onAddBeatToCollection={onAddBeatToCollection}
-                onDrop={onDrop}
-                handleDragEnd={handleDragEnd}
-              />
             </Link>
+          </li>
+          {beatCollections.map((collection) => (
+            <DroppableCollection
+              key={collection.id}
+              collection={collection}
+              onAddBeatToCollection={onAddBeatToCollection}
+            />
           ))}
         </ul>
       </div>
     </div>
   );
-}
+};
 
 export default Sidebar;

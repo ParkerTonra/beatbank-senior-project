@@ -1,8 +1,7 @@
-import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { flexRender, Row, Cell } from "@tanstack/react-table";
 import { Beat } from "../bindings";
-import { DragEndEvent } from "@dnd-kit/core";
+import { DragEndEvent, useDraggable } from "@dnd-kit/core";
 
 interface DraggableRowProps {
   row: Row<Beat>;
@@ -11,13 +10,13 @@ interface DraggableRowProps {
 }
 
 function DraggableRow({ row, onRowSelection}: DraggableRowProps) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
+  const { transform, setNodeRef, isDragging } = useDraggable({
     id: row.original.id,
   });
+  
 
   const style: any = {
     transform: CSS.Transform.toString(transform),
-    transition: transition,
     opacity: isDragging ? 0.8 : 1,
     zIndex: isDragging ? 1 : 0,
     position: "relative",
