@@ -1,74 +1,86 @@
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyTuple, PyModule, PyString, PyList};
 use pyo3::wrap_pyfunction;
-
-
 use std::env;
 use std::path::PathBuf;
 
+fn get_venv_python_path() -> PathBuf {
+    // Get the current directory
+    let current_dir = env::current_dir().expect("Failed to get current directory");
+
+    // Determine the correct Python executable path for the platform
+    if cfg!(target_os = "windows") {
+        current_dir.join(".venv").join("Scripts").join("python.exe")
+    } else {
+        current_dir.join(".venv").join("bin").join("python")
+    }
+}
+
+fn get_venv_site_packages() -> PathBuf {
+    // Get the current directory
+    let current_dir = env::current_dir().expect("Failed to get current directory");
+
+    // Build path to the virtual environment's site-packages directory
+    current_dir.join(".venv").join("Lib").join("site-packages")
+}
+
+fn get_analyzer_path() -> PathBuf {
+    // Get the current directory
+    let current_dir = env::current_dir().expect("Failed to get current directory");
+
+    // Build path to the src directory (where the audio_analyzer.py is located)
+    current_dir.join("src")
+}
+
 #[pyfunction]
 pub fn analyze_audio(file_path: &str) -> PyResult<(String, f64)> {
+    // Construct the paths outside of the GIL context
+    let venv_python_path = get_venv_python_path();
+    let venv_site_packages = get_venv_site_packages();
+    let analyzer_path = get_analyzer_path();
+
     Python::with_gil(|py| {
-        // Import the sys module using import_bound
+        // Import the sys module
         let sys: Bound<'_, PyModule> = py.import_bound("sys")?;
 
-        // Get the sys.path directly as a PyList
+        // Set the Python executable to the one inside the virtual environment
+        let venv_python_path_str = venv_python_path.to_str().expect("Failed to convert path to str");
+        println!("Setting Python executable to: {:?}", venv_python_path_str);
+        sys.setattr("executable", venv_python_path_str)?;
+
+        // Ensure sys.prefix points to the virtual environment
+        sys.setattr("prefix", venv_python_path_str)?;
+        sys.setattr("base_prefix", venv_python_path_str)?;
+
+        // Ensure sys.path includes the virtual environment's site-packages
         let path: Bound<'_, PyList> = sys.getattr("path")?.extract()?;
+        let venv_site_packages_str = venv_site_packages.to_str().expect("Failed to convert venv path to str");
+        let analyzer_path_str = analyzer_path.to_str().expect("Failed to convert analyzer path to str");
 
-        // Convert the path to Vec<String> and print it for debugging
-        let mut path_vec: Vec<String> = path.iter()
-            .map(|p| p.extract::<String>())
-            .collect::<PyResult<Vec<String>>>()?;
+        // Print paths for debugging
+        println!("Analyzer path: {:?}", analyzer_path_str);
+        println!("Virtual environment site-packages path: {:?}", venv_site_packages_str);
 
-        // Print the Python path for debugging before appending
-        println!("Python path before appending: {:?}", path_vec);
+        // Prepend the virtual environment's site-packages to sys.path
+        path.call_method("insert", (0, PyString::new_bound(py, venv_site_packages_str)), None)?;
 
-        // Get the absolute path to src-tauri/src
-        let current_dir = env::current_dir().expect("Failed to get current directory");
-        let analyzer_path: PathBuf = current_dir.join("src-tauri\\src");
-        let analyzer_path_str = analyzer_path.to_str().expect("Failed to convert path to str");
-
-        // Append the absolute path where audio_analyzer.py is located
+        // Also add the analyzer path where audio_analyzer.py is located
         path.call_method("append", (PyString::new_bound(py, analyzer_path_str),), None)?;
 
-        // Convert the updated path to Vec<String> and print it for debugging
-        path_vec = path.iter()
+        // Print updated sys.path for debugging
+        let updated_path: Vec<String> = path.iter()
             .map(|p| p.extract::<String>())
             .collect::<PyResult<Vec<String>>>()?;
+        println!("Updated Python path: {:?}", updated_path);
 
-        // Print the Python path for debugging after appending
-        println!("Updated Python path: {:?}", path_vec);
-
-        let executable: Bound<'_, PyString> = sys.getattr("executable")?.extract()?;
-        println!("Python executable: {}", executable);
-
-        let cwd: Bound<'_, PyAny> = py.import_bound("os")?.call_method("getcwd", (), None)?;
-        println!("Current working directory: {:?}", cwd);
-
-
-        // Try importing the module again for debugging
-        match py.import_bound("audio_analyzer") {
-            Ok(_) => println!("Module imported successfully!"),
-            Err(e) => println!("Failed to import module: {:?}", e),
-        }
-
-
-        // Import the audio_analyzer module using import_bound
+        // Import the audio_analyzer module and call the analyze method
         let my_module: Bound<'_, PyModule> = py.import_bound("audio_analyzer")?;
-
-        // Create a PyString for the file path using new_bound
         let py_file_path: Bound<'_, PyString> = PyString::new_bound(py, file_path);
-
-        // Create a PyTuple with the arguments using new_bound
-        let args: Bound<'_, PyTuple> = PyTuple::new_bound(py, vec![py_file_path]); // Wrap the argument in a Vec
-
-        // Call the analyze function and extract the result
+        let args = PyTuple::new_bound(py, vec![py_file_path]);
         let result: Bound<'_, PyAny> = my_module.call_method("analyze", args, None)?;
+        let extracted_result: (String, f64) = result.extract()?;
 
-        // Extract the result as (String, f64)
-        let extracted_result: (String, f64) = result.extract()?; // Assuming the result is (String, f64)
-
-        Ok(extracted_result) // Return the result
+        Ok(extracted_result)
     })
 }
 

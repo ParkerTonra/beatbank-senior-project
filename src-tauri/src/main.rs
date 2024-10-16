@@ -176,9 +176,10 @@ async fn analyze_audio_command(file_path: String) -> Result<(String, f64), Strin
 }
 
 fn setup_python() -> PyResult<()> {
+    println!("Starting setup_python");
     // Set the Python path dynamically, if needed
     let current_dir = env::current_dir().expect("Failed to get current directory");
-    let src_dir = current_dir.join("src-tauri/src");
+    let src_dir = current_dir.join("src");
 
     let python_path = format!(
         "{};{}",
