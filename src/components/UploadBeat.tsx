@@ -9,8 +9,6 @@ interface UploadBeatProps {
   selectedBeat: Beat | null;
 }
 
-
-
 const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [uploadStatus, setUploadStatus] = useState<string>('');
