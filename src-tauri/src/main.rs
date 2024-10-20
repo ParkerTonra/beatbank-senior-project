@@ -175,33 +175,9 @@ async fn analyze_audio_command(file_path: String) -> Result<(String, f64), Strin
     }
 }
 
-fn setup_python() -> PyResult<()> {
-    println!("Starting setup_python");
-    // Set the Python path dynamically, if needed
-    let current_dir = env::current_dir().expect("Failed to get current directory");
-    let src_dir = current_dir.join("src");
-
-    let python_path = format!(
-        "{};{}",
-        env::var("PYTHONPATH").unwrap_or_default(),
-        src_dir.display()
-    );
-
-    // Print the Python path for debugging
-    println!("Updated Python path: {:?}", python_path);
-
-    // Set the environment variable
-    env::set_var("PYTHONPATH", python_path);
-
-    Ok(())
-}
-
 fn main() {
     // Initialize the Python interpreter
     pyo3::prepare_freethreaded_python();
-
-    setup_python().expect("Failed to setup Python");
-    println!("Python setup");
 
 
     println!("Starting beatbank...");
