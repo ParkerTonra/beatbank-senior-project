@@ -8,7 +8,6 @@ mod store;
 mod audio_analysis; // <-- Add this line
 
 use diesel::prelude::*;
-use pyo3::PyResult;
 use serde_json;
 use std::{env, sync::{Mutex}};
 
@@ -112,7 +111,6 @@ fn analyze_and_update_beat(
     
     Ok(())
 }
-
 
 
 #[tauri::command]

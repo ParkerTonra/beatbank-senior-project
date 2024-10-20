@@ -21,7 +21,12 @@ fn get_venv_site_packages() -> PathBuf {
     let current_dir = env::current_dir().expect("Failed to get current directory");
 
     // Build path to the virtual environment's site-packages directory
-    current_dir.join(".venv").join("Lib").join("site-packages")
+    if cfg!(target_os = "windows") {
+        current_dir.join(".venv").join("Lib").join("site-packages")
+    } else {
+        // For macOS/Linux, the site-packages is under lib directly
+        current_dir.join(".venv").join("lib").join("site-packages")
+    }
 }
 
 fn get_analyzer_path() -> PathBuf {

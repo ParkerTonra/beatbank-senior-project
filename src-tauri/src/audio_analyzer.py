@@ -6,12 +6,10 @@ import numpy
 
 def analyze(file_path):
     try:
-
         print("Python executable:", sys.executable)
         print("Python path:", sys.path)
         print(f"Numpy version: {numpy.__version__}")
         print("Numpy is installed at:", os.path.dirname(numpy.__file__))
-
 
         print(f"Starting analysis on {file_path}")
         y, sr = librosa.load(file_path)
