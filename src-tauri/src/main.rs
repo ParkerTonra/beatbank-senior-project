@@ -175,10 +175,10 @@ async fn analyze_audio_command(file_path: String) -> Result<(String, f64), Strin
     }
 }
 
+
 fn main() {
     // Initialize the Python interpreter
     pyo3::prepare_freethreaded_python();
-
 
     println!("Starting beatbank...");
 
