@@ -44,8 +44,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
         if (validExtensions.indexOf(extension) >= 0) {
           setSelectedFiles(filePaths);
           promises.push(invoke('add_beat', {
-            title: filepath.name || 'Unknown', // Use filename as title
-            filePath: filepath.path,
+            filePath: filepath.path
           }));
         }
       }
@@ -98,7 +97,6 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
         for (const filePath of (Array.isArray(filePaths) ? filePaths : [filePaths])) {
           try {
             const result = await invoke('add_beat', {
-              title: filePath.split('/').pop() || 'Unknown', // Use filename as title
               filePath: filePath,
             });
             fetchData();

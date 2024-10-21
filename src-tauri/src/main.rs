@@ -43,7 +43,6 @@ fn fetch_column_vis() -> String {
 #[tauri::command]
 fn add_beat(
     state: State<AppState>,
-    title: String,
     file_path: String,
 ) -> Result<String, String> {
     let file_name = Path::new(&file_path)
