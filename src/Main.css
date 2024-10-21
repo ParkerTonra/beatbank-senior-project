@@ -61,7 +61,7 @@
   }
 
   button {
-    @apply font-sans text-base font-normal text-white bg-purple-600 rounded cursor-pointer shadow-md transition-colors duration-300 px-2.5 py-2;
+    @apply font-sans text-base font-normal text-white bg-slate-800 rounded cursor-pointer shadow-md transition-colors duration-300 px-2.5 py-2;
   }
 
   button:focus {

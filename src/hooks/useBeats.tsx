@@ -24,7 +24,7 @@ export const useBeats = () => {
   const [beatCollections, setBeatCollections]: [BeatCollection[], Dispatch<SetStateAction<BeatCollection[]>>] = useState<BeatCollection[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [setName, setSetName] = useState('');
+  const [currentCollection, setCurrentCollection] = useState<BeatCollection | null>(null);
   // fetch sets, data, and column visibility for initialization
   const fetchData = useCallback(async () => {
     console.log("Fetching data...");
@@ -66,26 +66,28 @@ export const useBeats = () => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch set name
-      const name = await invoke('get_set_name', { id: setId });
-      setSetName(typeof name === 'string' ? name : 'Unknown Set');
+      // Fetch beat collection data
+      const collectionResponse = await invoke<BeatCollection>('get_beat_collection', { id: setId });
+      setCurrentCollection(collectionResponse);
 
-      // Fetch beat set data
-      const response = await invoke('get_beat_set', { setId });
-      const fetchedBeats = typeof response === 'string' ? JSON.parse(response) : response;
+      // Fetch beats in the collection
+      const beatsResponse = await invoke<Beat[]>('get_beats_in_collection', { id: setId });
+      
+      console.log('Received beat collection:', collectionResponse);
+      console.log('Received beats:', beatsResponse);
 
-      console.log('Received beat set:', fetchedBeats);
-      if (Array.isArray(fetchedBeats)) {
-        setBeats(fetchedBeats);
+      if (Array.isArray(beatsResponse)) {
+        setBeats(beatsResponse);
       } else {
-        console.error('Unexpected response format:', fetchedBeats);
-        setError(new Error('Received invalid data format for beat set.'));
+        console.error('Unexpected response format for beats:', beatsResponse);
+        setError(new Error('Received invalid data format for beats.'));
         setBeats([]);
       }
     } catch (err) {
       console.error('Error fetching data:', err);
       setError(new Error('An error occurred while fetching data.'));
       setBeats([]);
+      setCurrentCollection(null);
     } finally {
       setLoading(false);
     }
@@ -96,11 +98,11 @@ export const useBeats = () => {
     setBeats,
     columnVisibility,
     setColumnVisibility,
+    currentCollection,
     loading,
     error,
     fetchData,
     fetchSetData,
-    setName,
     beatCollections,
   };
 };

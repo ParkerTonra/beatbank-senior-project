@@ -87,6 +87,21 @@ fn new_beat_collection(
 }
 
 #[tauri::command]
+fn get_beat_collection(state: State<AppState>, id: i32) -> Result<BeatCollection, String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::get_beat_collection(&mut *conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_beats_in_collection(state: State<AppState>, id: i32) -> Result<Vec<Beat>, String> {
+    println!("getting beats in collection");
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::get_beats_in_collection(&mut *conn, id).map_err(|e| e.to_string())
+    // print the result
+
+}
+
+#[tauri::command]
 fn delete_beat_collection(state: State<AppState>, id: i32) -> Result<(), String> {
     let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
     db::delete_beat_collection(&mut *conn, id).map_err(|e| e.to_string())?;
@@ -104,6 +119,18 @@ println!("Fetching collections...");
         .map_err(|e| e.to_string())
         .and_then(|beats_result| serde_json::to_string(&beats_result).map_err(|e| e.to_string()))
 }
+
+#[tauri::command]
+fn add_beat_to_collection(
+    state: State<AppState>,
+    collection_id: i32,
+    beat_id: i32,
+) -> Result<(), String> {
+    let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
+    db::add_beat_to_collection(&mut *conn, collection_id, beat_id).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 
 fn main() {
     println!("Starting beatbank...");
@@ -126,6 +153,9 @@ fn main() {
             new_beat_collection, 
             fetch_collections,
             delete_beat_collection,
+            add_beat_to_collection,
+            get_beat_collection,
+            get_beats_in_collection,
             store::load_settings, 
             store::save_settings, 
             store::get_settings_path
