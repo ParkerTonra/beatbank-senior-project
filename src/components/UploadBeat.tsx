@@ -98,6 +98,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
         for (const filePath of (Array.isArray(filePaths) ? filePaths : [filePaths])) {
           try {
             const result = await invoke('add_beat', {
+              // Windows uses back slashes instead of forward slashes so we can split on both to make it work for both
               title: filePath.split('/').pop().split('\\').pop() || 'Unknown', // Use filename as title
               filePath: filePath,
             });
