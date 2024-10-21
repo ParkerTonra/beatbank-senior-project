@@ -14,7 +14,6 @@ interface UploadBeatProps {
 const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [uploadStatus, setUploadStatus] = useState<string>('');
-  const [showEditColumnsDialog, setShowEditColumnsDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
 
   const handleFileDelete = async () => {
@@ -127,14 +126,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
         <button onClick={handleFolderUpload} className="ml-2">Upload a folder</button>
         <button onClick={handleFileDelete} className="ml-2">Delete</button>
         <button onClick={fetchData} className="ml-2">Refresh</button>
-        <button
-          onClick={() => setShowEditColumnsDialog(true)}
-          className="ml-2"
-          id="edit-columns-tooltip"
-        >
-          Edit Columns
-        </button>
-        {uploadStatus && <button onClick={() => setShowStatusDialog(true)} className="ml-2  absolute right-2 top-2"><span className="pi pi-info-circle"/></button>}
+        {uploadStatus && <button onClick={() => setShowStatusDialog(true)} className="ml-2 absolute right-2 top-2"><span className="pi pi-info-circle"/></button>}
       </div>
       <Dialog
         header="Upload Status"
@@ -163,17 +155,6 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
               </div>
             )}
           </div>
-        </div>
-      </Dialog>
-      <Dialog
-        header="Edit Columns"
-        visible={showEditColumnsDialog}
-        className="bg-blue-600 w-3/4 h-1/2 p-4 rounded-md"
-        modal
-        onHide={() => setShowEditColumnsDialog(false)}
-      >
-        <div className="overflow-y-auto my-4">
-          Put column checkboxes here?
         </div>
       </Dialog>
     </div>
