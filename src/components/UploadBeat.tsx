@@ -98,7 +98,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
         for (const filePath of (Array.isArray(filePaths) ? filePaths : [filePaths])) {
           try {
             const result = await invoke('add_beat', {
-              title: filePath.split('/').pop() || 'Unknown', // Use filename as title
+              title: filePath.split('/').pop().split('\\').pop() || 'Unknown', // Use filename as title
               filePath: filePath,
             });
             fetchData();
