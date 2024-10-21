@@ -62,6 +62,8 @@ fn add_beat(
     let file_name = Path::new(&file_path)
         .file_name()
         .and_then(|name| name.to_str())
+        // get rid of the extension
+        .and_then(|name| name.split('.').next())
         .unwrap_or("Unknown")
         .to_string();
 
