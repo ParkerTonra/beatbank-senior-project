@@ -7,6 +7,7 @@ mod db;
 mod models;
 mod schema;
 mod store;
+mod audio_analysis;
 use diesel::prelude::*;
 use serde_json;
 use std::{env, path::Path, sync::{Arc, Mutex}};
@@ -67,15 +68,54 @@ fn add_beat(
         .unwrap_or("Unknown")
         .to_string();
 
-        let mut conn_guard = state.conn.lock().map_err(|e| e.to_string())?;
-        let conn = &mut conn_guard.conn;
-        match db::add_beat(&mut *conn, &file_name, &file_path) {
-        Ok(new_beat) => {
-            println!("New beat added with id: {}", new_beat.id);
-            Ok(format!("New beat added with id: {}", new_beat.id))
-        },
-        Err(e) => Err(e.to_string()),
+    let mut conn_guard = state.conn.lock().map_err(|e| e.to_string())?;
+    let conn = &mut conn_guard.conn;
+    
+    // Store the inserted beat result
+    let inserted_beat = db::add_beat(&mut *conn, &file_name, &file_path)
+        .map_err(|e| e.to_string())?;
+    
+    println!("New beat added with id: {}", inserted_beat.id);
+    
+    // Analyze and update the beat synchronously
+    analyze_and_update_beat(inserted_beat.id, file_path.clone(), conn)?;
+    
+    Ok(format!("New beat added with id: {}", inserted_beat.id))
+}
+
+fn analyze_and_update_beat(
+    beat_id: i32, 
+    file_path: String, 
+    conn: &mut diesel::SqliteConnection // Pass connection as mutable reference
+) -> Result<(), String> {
+    use crate::audio_analysis::analyze_audio;
+
+    // Call your Python analysis function
+    println!("Starting analysis for file: {}", file_path);
+    match analyze_audio(&file_path) {
+        Ok((key, tempo)) => {
+            println!("Analysis Result: Key: {}, Tempo: {}", key, tempo); // Debug output
+            let musical_key_str = key.to_string(); // Ensure key is a String
+
+            // Update the database
+            diesel::update(crate::schema::beats::dsl::beats.find(beat_id))
+                .set((
+                    crate::schema::beats::dsl::musical_key.eq(Some(musical_key_str)),
+                    crate::schema::beats::dsl::bpm.eq(Some(tempo)),
+                ))
+                .execute(conn)
+                .map_err(|e| {
+                    println!("Error updating beat: {:?}", e); // Log the error
+                    e.to_string()
+                })?;
+        }
+        Err(e) => {
+            println!("Failed to analyze audio. Error: {}", e); // Log the error
+            return Err(e.to_string()); // Return the error as a Result
+        }
     }
+
+    Ok(())
 }
 
 #[tauri::command]
