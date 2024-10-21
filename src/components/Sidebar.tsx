@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BeatCollection } from "./../bindings";
+import { Link } from 'react-router-dom';
+import DroppableCollection from "./DroppableCollection"
 
 interface SidebarProps {
   collections: BeatCollection[];
+  onAddBeatToCollection: (collectionId: number, beatId: number) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collections }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  collections,
+}) => {
   const [title, setTitle] = useState("");
   const [beatCollections, setBeatCollections] = useState<BeatCollection[]>(collections);
 
@@ -19,7 +24,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collections }) => {
     event.preventDefault();
     if (title.trim()) {
       try {
-        const newCollection: BeatCollection = await invoke("new_beat_collection", { setName: title.trim() });
+        const newCollection: BeatCollection = await invoke("new_beat_collection", {
+          setName: title.trim(),
+        });
         console.log("New beat collection created:", newCollection);
         setBeatCollections([...beatCollections, newCollection]);
         setTitle(""); // Clear the input after successful creation
@@ -49,21 +56,24 @@ const Sidebar: React.FC<SidebarProps> = ({ collections }) => {
           Add New Set
         </button>
       </form>
-      <div className="flex-1 overflow-y-auto h-6">
+      <div className="flex-1 overflow-y-auto">
         <h3 className="text-lg font-semibold mb-2">My sets:</h3>
         <ul className="space-y-2">
+          <li className="block w-full text-left p-2 bg-gray-500 py-4 hover:bg-gray-600 rounded h-12 items-center justify-start">
+            <Link to="/">
+              All Beats
+            </Link>
+          </li>
           {beatCollections.map((collection) => (
-            <li
+            <DroppableCollection
               key={collection.id}
-              className="bg-gray-700 p-2 rounded hover:bg-gray-600 transition duration-200 cursor-pointer h-12"
-            >
-              {collection.set_name}
-            </li>
+              collection={collection}
+            />
           ))}
         </ul>
       </div>
     </div>
   );
-}
+};
 
 export default Sidebar;

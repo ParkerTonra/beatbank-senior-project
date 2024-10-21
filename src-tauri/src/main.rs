@@ -9,11 +9,16 @@ mod audio_analysis; // <-- Add this line
 
 use diesel::prelude::*;
 use serde_json;
-use std::{env, sync::{Mutex}};
+use std::{env, sync::Mutex};
+
+use std::error::Error;
+
+use tauri::State;
+
 
 
 use crate::models::{Beat, BeatCollection, NewBeat};
-use tauri::{State};
+
 
 struct AppState {
     conn: Mutex<SqliteConnection>,
@@ -173,37 +178,57 @@ async fn analyze_audio_command(file_path: String) -> Result<(String, f64), Strin
     }
 }
 
+fn main() -> Result<(), Box<dyn Error>> {
+    // Initialize logging
+    use log::{info, error};
+    // Set the log level to DEBUG
+    
+    env_logger::init();
 
-fn main() {
+    // Set up panic hook to catch panics and log them
+    std::panic::set_hook(Box::new(|panic_info| {
+        error!("Panic occurred: {:?}", panic_info);
+    }));
+
     // Initialize the Python interpreter
     pyo3::prepare_freethreaded_python();
 
-    println!("Starting beatbank...");
+    info!("Starting beatbank...");
 
-    let conn = db::establish_connection();
-    println!("Connection established!");
+    // Try to establish database connection, handle any errors
+    let conn = db::establish_connection().map_err(|e| {
+        error!("Failed to establish database connection: {}", e);
+        e
+    })?;
+    info!("Database connection established!");
 
     let app_state = AppState {
         conn: Mutex::new(conn),
     };
 
+    // Try to run Tauri application, handle any errors
     tauri::Builder::default()
         .manage(app_state)
         .invoke_handler(tauri::generate_handler![
-            greet, 
-            fetch_beats, 
-            add_beat, 
+            greet,
+            fetch_beats,
+            add_beat,
             delete_beat,
-            fetch_column_vis, 
-            new_beat_collection, 
+            fetch_column_vis,
+            new_beat_collection,
             fetch_collections,
             delete_beat_collection,
-            store::load_settings, 
-            store::save_settings, 
+            store::load_settings,
+            store::save_settings,
             store::get_settings_path,
             analyze_audio_command
         ])
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .map_err(|e| {
+            error!("Error while running Tauri application: {}", e);
+            e
+        })?;
+
+    Ok(())
 }
 

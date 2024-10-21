@@ -1,33 +1,19 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   useReactTable,
   flexRender,
   getCoreRowModel,
   RowSelectionState,
-  VisibilityState,
-  Updater,
   ColumnResizeMode,
   ColumnSizingState,
+  OnChangeFn,
+  VisibilityState,
 } from "@tanstack/react-table";
 import { createColumnDef } from "./../models/ColumnDef.tsx";
 import { Beat, ColumnVis, EditThisBeat } from "./../bindings.ts";
-import { UniqueIdentifier } from "@dnd-kit/core";
 import {
-  DndContext,
   DragEndEvent,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
 } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import DraggableRow from "./DraggableRow.tsx";
 import { invoke } from "@tauri-apps/api/tauri";
 import EditBeatCard from "./EditBeatCard.tsx";
@@ -41,11 +27,14 @@ interface BeatTableProps {
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   selectedBeat: Beat | null;
   setSelectedBeat: React.Dispatch<React.SetStateAction<Beat | null>>;
-  fetchData: () => void;
+  fetchData?: () => void;
+  fetchSetData?: (id: number) => void;
   onBeatsChange: (newBeats: Beat[]) => void;
   columnVisibility: ColumnVis;
-  setColumnVisibility: React.Dispatch<React.SetStateAction<ColumnVis>>;
+  setColumnVisibility: (columnVis: ColumnVis) => void;
   saveRowOrder?: (beatsToSave: Beat[]) => Promise<void>; // TODO: make this mandatory and work for sets as well.
+  onAddBeatToCollection: (beatId: number, collectionId: number) => void;
+  onDragEnd: (event: DragEndEvent) => void;
 }
 
 function BeatTable({
@@ -58,7 +47,6 @@ function BeatTable({
   selectedBeat,
   setSelectedBeat,
   fetchData,
-  onBeatsChange,
   columnVisibility,
   setColumnVisibility,
 }: BeatTableProps) {
@@ -104,13 +92,13 @@ function BeatTable({
     setRowSelection((prev) => {
       if (isCtrlPressed) {
         // Toggle the selected row
-        const newSelection = { ...prev };
+        const newSelection: RowSelectionState = { ...prev };
         newSelection[rowId] = !newSelection[rowId];
         setLastSelectedRow(rowId);
         return newSelection;
       } else if (isShiftPressed && lastSelectedRow) {
         // Select all rows between last selected and current
-        const newSelection = { ...prev };
+        const newSelection: RowSelectionState = { ...prev };
         const rowIds = tableInstance.getRowModel().rows.map((row) => row.id);
         const startIndex = rowIds.indexOf(lastSelectedRow);
         const endIndex = rowIds.indexOf(rowId);
@@ -127,7 +115,7 @@ function BeatTable({
         setLastSelectedRow(rowId);
         // get the beat object from the rowId
         onBeatSelect(beat);
-        return { [rowId]: true };
+        return { [rowId]: true } as RowSelectionState;
       }
     });
   };
@@ -137,23 +125,11 @@ function BeatTable({
     [onBeatPlay]
   );
 
-  const dataIds: UniqueIdentifier[] = useMemo(
-    () => beats.map(({ id }) => id),
-    [beats]
-  );
-
-  const handleColumnVisibilityChange = (
-    updaterOrValue: Updater<VisibilityState>
-  ) => {
-    console.log("handleColumnVisibilityChange:", updaterOrValue);
-    setColumnVisibility((prev) => {
-      if (typeof updaterOrValue === "function") {
-        const newState = updaterOrValue(prev as VisibilityState);
-        return newState as ColumnVis;
-      }
-      return updaterOrValue as ColumnVis;
-    });
-  };
+  // Unused. Safe to delete?
+  // const dataIds: UniqueIdentifier[] = useMemo(
+  //   () => beats.map(({ id }) => id),
+  //   [beats]
+  // );
 
   const tableInstance = useReactTable<Beat>({
     columns: finalColumnDef,
@@ -171,60 +147,29 @@ function BeatTable({
     },
     enableRowSelection: true,
     enableMultiRowSelection: true,
-    onColumnVisibilityChange: handleColumnVisibilityChange,
-    debugTable: true,
-    debugHeaders: true,
-    debugColumns: true,
-  });
+    onColumnVisibilityChange: setColumnVisibility as OnChangeFn<VisibilityState>,
+  })
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (active && over && active.id !== over.id) {
-      const newBeats = arrayMove(
-        beats,
-        beats.findIndex((beat) => beat.id === active.id),
-        beats.findIndex((beat) => beat.id === over.id)
-      );
-      
-      onBeatsChange(newBeats);
-
-      
-
-      saveRowOrder(newBeats);
-    }
-  };
-
-  const saveRowOrder = async (beatsToSave: Beat[]) => {
-    const rowOrder = beatsToSave.map((beat, index) => ({
-      row_id: beat.id.toString(),
-      row_number: index + 1,
-    }));
-    try {
-      await invoke("save_row_order", { rowOrder });
-      console.log("Row order saved successfully");
-    } catch (error) {
-      console.error("Error saving row order:", error);
-    }
-  };
-
-  const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  );
+//TODO: save row order
+  // const saveRowOrder = async (beatsToSave: Beat[]) => {
+  //   const rowOrder = beatsToSave.map((beat, index) => ({
+  //     row_id: beat.id.toString(),
+  //     row_number: index + 1,
+  //   }));
+  //   try {
+  //     await invoke("save_row_order", { rowOrder });
+  //     console.log("Row order saved successfully");
+  //   } catch (error) {
+  //     console.error("Error saving row order:", error);
+  //   }
+  // };
 
   if (columnVisibility === undefined) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-y-auto">
-      <DndContext
-        collisionDetection={closestCenter}
-        modifiers={[restrictToVerticalAxis]}
-        onDragEnd={handleDragEnd}
-        sensors={sensors}
-      >
+    <div className="flex flex-col h-full w-full overflow-y-auto select-none">
         <table className="w-full mb-96">
           <thead>
             {tableInstance.getHeaderGroups().map((headerGroup) => (
@@ -259,21 +204,15 @@ function BeatTable({
             ))}
           </thead>
           <tbody>
-            <SortableContext
-              items={dataIds}
-              strategy={verticalListSortingStrategy}
-            >
               {tableInstance.getRowModel().rows.map((rowElement) => (
                 <DraggableRow
                   row={rowElement}
                   key={rowElement.id}
-                  onRowSelection={handleRowSelection}
+                  onRowSelection={handleRowSelection}    
                 />
               ))}
-            </SortableContext>
           </tbody>
         </table>
-      </DndContext>
       <div className="flex px-4 border border-black shadow rounded mt-12 text-sm space-x-4">
         <div className="px-1 border-b border-black ">
           <label>
@@ -321,7 +260,7 @@ function BeatTable({
                   .then((response) => {
                     console.log("Response from update_beat:", response);
                     console.log("Fetching updated data");
-                    fetchData();
+                    if (fetchData) fetchData();
                   })
                   .catch((error) => {
                     console.error("Error updating beat:", error);
@@ -334,5 +273,6 @@ function BeatTable({
     </div>
   );
 }
+
 
 export default BeatTable;
