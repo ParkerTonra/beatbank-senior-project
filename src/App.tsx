@@ -9,7 +9,7 @@ import BeatTable from "./components/BeatTable";
 import { SunIcon } from "lucide-react";
 import { useBeats } from "./hooks/useBeats";
 import { loadSettings, saveSettings, getSettingsPath } from './store';
-import { DndContext, DragEndEvent, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { invoke } from "@tauri-apps/api/tauri";
 import { message } from "@tauri-apps/api/dialog";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -48,6 +48,24 @@ function App() {
       fetchData(); // Refresh data or update state as needed
     } catch (error) {
       console.error('Error adding beat to collection:', error);
+    }
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const activeId = event.active.id.toString();
+    
+    // Check if it's a beat being dragged (starts with 'sortable-' or 'beat-')
+    if (activeId.startsWith('sortable-') || activeId.startsWith('beat-')) {
+      // Extract the beat ID
+      const beatId = parseInt(activeId.replace(/^(sortable-|beat-)/, ''), 10);
+      
+      // Find the corresponding beat
+      const draggedBeat = beats.find(beat => beat.id === beatId);
+      
+      // Set it as the selected beat
+      if (draggedBeat) {
+        setSelectedBeat(draggedBeat);
+      }
     }
   };
 
@@ -140,7 +158,7 @@ function App() {
   if (error) return <div className="flex items-center justify-center h-screen">Error: {error.message}</div>;
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
       <Router>
 
         <div className="flex h-screen bg-gray-100">
