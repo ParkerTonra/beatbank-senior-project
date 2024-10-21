@@ -65,11 +65,11 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex-1 overflow-y-auto">
         <h3 className="text-lg font-semibold mb-2">My sets:</h3>
         <ul className="space-y-2">
-          <li className="block w-full text-left p-2 bg-gray-500 py-4 hover:bg-gray-600 rounded h-12 items-center justify-start">
-            <Link to="/">
-              All Beats
-            </Link>
-          </li>
+          <Link to="/">
+            <li className="block w-full text-left p-2 bg-gray-500 py-4 hover:bg-gray-600 rounded h-12 items-center justify-start cursor-pointer">
+                All Beats
+            </li>
+          </Link>
           {beatCollections.map((collection) => (
             <DroppableCollection
               key={collection.id}

@@ -3,6 +3,7 @@ import { Beat, BeatCollection } from "./bindings";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
 import "./Main.css";
+import 'primeicons/primeicons.css';
 import { SplashScreen } from "./components/SplashScreen";
 import UploadBeat from "./components/UploadBeat";
 import BeatTable from "./components/BeatTable";
@@ -29,7 +30,7 @@ function App() {
     useSensor(MouseSensor),
     useSensor(TouchSensor)
   );
-  
+
   const handleAddToCollBtnClick = async (collectionId: number) => {
     console.log("handleAddToCollBtnClick:", collectionId);
     if (!selectedBeat) {
@@ -152,27 +153,21 @@ function App() {
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <Router>
-      
+
         <div className="flex h-screen bg-gray-100">
           <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} handleDragEnd={handleDragEnd} />
           <div className="flex-1 flex flex-col overflow-hidden">
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
-              <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
-              {/* debug info */}
-
-
+              <h1 className="text-3xl font-bold font-guerilla mb-4 py-0">BEATBANK</h1>
               <div className="flex justify-center gap-8">
                 <div className="flex flex-row">
                   <SettingsDropdown sets={beatCollections} handleAddToCollBtnClick={handleAddToCollBtnClick} selectedBeat={selectedBeat} />
-
-                  
-
                 </div>
 
                 <button onClick={handleThemeChange}>
                   <div className="flex-row items-center justify-center w-52">
                     <div className="flex items-center text-center justify-center">
-                      <SunIcon className="h-6 w-6 justify-center mr-2" /> 
+                      <SunIcon className="h-6 w-6 justify-center mr-2" />
                       Toggle Theme
                     </div>
                     <div className="flex justify-center text-sm italic">
@@ -215,7 +210,7 @@ function App() {
           </div>
         </div>
         <DragOverlay>{/* Render dragged item */}</DragOverlay>
-      
+
     </Router>
     </DndContext>
   );
