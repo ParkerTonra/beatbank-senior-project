@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Beat, BeatCollection } from "./bindings";
+import { Beat } from "./bindings";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
 import "./Main.css";
@@ -31,13 +31,11 @@ function App() {
   );
 
   const handleAddToCollBtnClick = async (collectionId: number) => {
-    console.log("handleAddToCollBtnClick:", collectionId);
     if (!selectedBeat) {
       message('Please select a beat first.', { title: 'Error', type: 'error' });
       return;
     }
     let beatId = selectedBeat.id;
-    console.log("Current beat id:", beatId, "current set id:", collectionId);
     await invoke('add_beat_to_collection', { beatId, collectionId });
     // Refresh data or update state as needed
     fetchData();
@@ -101,15 +99,15 @@ function App() {
     fetchData();
   }, []);
 
-  const [collections, setCollections] = useState<BeatCollection[]>(beatCollections);
+  //const [collections, setCollections] = useState<BeatCollection[]>(beatCollections);
 
   useEffect(() => {
     const fetchSettings = async () => {
+      console.log("loading settings, path:", settingsPath);
       const settings = await loadSettings(); // Load settings from the backend
       setTheme(settings.theme); // Update the theme state with the loaded settings
 
       const path = await getSettingsPath(); // Fetch and log the settings path
-      console.log("Settings path:", path);
       setSettingsPath(path); // Update the state to display the settings path
     };
 
@@ -135,17 +133,9 @@ function App() {
     setBeats(newBeats);
   };
 
-  const handleDrop = (collectionId: number, beatId: number) => {
-    console.log("handleDrop:", collectionId, beatId);
-    //commitToCollection(beatId, collectionId);
-  }
-
   const handleBeatSelection = (beat: Beat) => {
-    console.log("beat selected:", beat);
     setSelectedBeat(beat);
   };
-
-  console.log("beatCollections:", beatCollections);
 
   if (error) return <div className="flex items-center justify-center h-screen">Error: {error.message}</div>;
 
@@ -154,7 +144,7 @@ function App() {
       <Router>
 
         <div className="flex h-screen bg-gray-100">
-          <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} handleDragEnd={handleDragEnd} />
+          <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} />
           <div className="flex-1 flex flex-col overflow-hidden">
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
               <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
@@ -207,7 +197,7 @@ function App() {
                   />
                   <Route
                     path="/collection/:id"
-                    element={<BeatCollTable />}
+                    element={<BeatCollTable onDragEnd={handleDragEnd}/>}
                   />
                 </Routes>
 

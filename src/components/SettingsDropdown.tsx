@@ -50,7 +50,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
   //opens up EditBeatCard as a popup
   const handleEditBeat = async () => {
     if (!selectedBeat) {
-      console.log("No beat selected");
+      console.warn("No beat selected");
       return;
     }
     return (<EditBeatCard beat={selectedBeat} onClose={() => setIsOpen(false)} onSave={handleEditBeat}

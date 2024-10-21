@@ -4,10 +4,9 @@ import { BeatCollection } from '../bindings';
 
 interface DroppableCollectionProps {
   collection: BeatCollection;
-  onAddBeatToCollection: (collectionId: number, beatId: number) => void;
 }
 
-const DroppableCollection: React.FC<DroppableCollectionProps> = ({ collection, onAddBeatToCollection }) => {
+const DroppableCollection: React.FC<DroppableCollectionProps> = ({ collection }) => {
   const { isOver, setNodeRef } = useDroppable({
     id: `collection-${collection.id}`,
   });
@@ -20,9 +19,9 @@ const DroppableCollection: React.FC<DroppableCollectionProps> = ({ collection, o
 
   const navigate = useNavigate();
 
-  const handleClick = (event: React.MouseEvent) => {
+  const handleClick = () => {
     if (active) {
-      // A drag is in progress; prevent navigation
+      console.log("Preventing navigation")
       return;
     }
     navigate(`/collection/${collection.id}`);

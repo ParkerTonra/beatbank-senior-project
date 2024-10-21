@@ -1,6 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
 import { Cell, flexRender, Row } from '@tanstack/react-table';
-import { RowDragHandleCell } from './RowDragHandleCell';
 import { Beat } from '../bindings';
 import { CSS } from '@dnd-kit/utilities';
 

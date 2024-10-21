@@ -11,23 +11,9 @@ import {
 } from "@tanstack/react-table";
 import { createColumnDef } from "./../models/ColumnDef.tsx";
 import { Beat, ColumnVis, EditThisBeat } from "./../bindings.ts";
-import { UniqueIdentifier } from "@dnd-kit/core";
 import {
-  DndContext,
   DragEndEvent,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
 } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import DraggableRow from "./DraggableRow.tsx";
 import { invoke } from "@tauri-apps/api/tauri";
 import EditBeatCard from "./EditBeatCard.tsx";
@@ -55,14 +41,12 @@ function BeatTable({
   beats,
   // TODO: audio player
   // onBeatPlay,
-  onAddBeatToCollection,
   onBeatSelect,
   isEditing,
   setIsEditing,
   selectedBeat,
   setSelectedBeat,
   fetchData,
-  onBeatsChange,
   columnVisibility,
   setColumnVisibility,
 }: BeatTableProps) {
@@ -141,10 +125,11 @@ function BeatTable({
     [onBeatPlay]
   );
 
-  const dataIds: UniqueIdentifier[] = useMemo(
-    () => beats.map(({ id }) => id),
-    [beats]
-  );
+  // Unused. Safe to delete?
+  // const dataIds: UniqueIdentifier[] = useMemo(
+  //   () => beats.map(({ id }) => id),
+  //   [beats]
+  // );
 
   const tableInstance = useReactTable<Beat>({
     columns: finalColumnDef,
@@ -178,12 +163,6 @@ function BeatTable({
   //     console.error("Error saving row order:", error);
   //   }
   // };
-
-  const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  );
 
   if (columnVisibility === undefined) {
     return <div>Loading...</div>;
