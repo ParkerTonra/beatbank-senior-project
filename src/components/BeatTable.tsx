@@ -7,7 +7,7 @@ import {
   ColumnResizeMode,
   ColumnSizingState,
   OnChangeFn,
-  VisibilityState,
+  VisibilityState, SortingState, Row, getSortedRowModel,
 } from "@tanstack/react-table";
 import { createColumnDef } from "./../models/ColumnDef.tsx";
 import { Beat, ColumnVis, EditThisBeat } from "./../bindings.ts";
@@ -75,6 +75,7 @@ function BeatTable({
   const [isShiftPressed, setIsShiftPressed] = useState(false);
 
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+  const [sorting, setSorting] = useState<SortingState>([])
 
   // react based on key press state:
   useEffect(() => {
@@ -159,14 +160,15 @@ function BeatTable({
       rowSelection,
       columnVisibility,
       columnSizing,
+      sorting,
     },
     enableRowSelection: true,
     enableMultiRowSelection: true,
     onColumnVisibilityChange: setColumnVisibility as OnChangeFn<VisibilityState>,
+    enableSorting: true,
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
   })
-
-
-
 
   const handleDragEnd = (event: DragEndEvent) => {
     console.log('drag end.')
@@ -189,19 +191,6 @@ function BeatTable({
       onBeatsChange(newBeats);
     }
   };
-//TODO: save row order
-  // const saveRowOrder = async (beatsToSave: Beat[]) => {
-  //   const rowOrder = beatsToSave.map((beat, index) => ({
-  //     row_id: beat.id.toString(),
-  //     row_number: index + 1,
-  //   }));
-  //   try {
-  //     await invoke("save_row_order", { rowOrder });
-  //     console.log("Row order saved successfully");
-  //   } catch (error) {
-  //     console.error("Error saving row order:", error);
-  //   }
-  // };
 
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -228,19 +217,30 @@ function BeatTable({
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="relative pr-4 text-left border-gray-800 border-b-4"
+                    className="relative pr-4 text-left border-gray-800 border-b-4 cursor-pointer mr-2"
                     style={{
                       width: header.getSize(),
                     }}
+                    onClick={() => header.column.toggleSorting()}
                   >
-                    <div className="flex items-center truncate">
+                    <div className="flex items-center truncate w-full justify-between">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                      <div>
+                        {header.column.getIsSorted() === "asc" ? (
+                          <span>^</span>
+                        ) : header.column.getIsSorted() === "desc" ? (
+                            <span>v</span>
+                          ) :
+                          null
+                        }
+                      </div>
                     </div>
+
                     {header.column.getCanResize() && (
                       <div
                         onMouseDown={header.getResizeHandler()}
@@ -261,7 +261,7 @@ function BeatTable({
             >
               {tableInstance.getRowModel().rows.map((rowElement) => (
                 <DraggableRow
-                  row={rowElement}
+                  row={rowElement as Row<Beat>}
                   key={rowElement.id}
                   onRowSelection={handleRowSelection}
                   onDragEnd={handleDragEnd}

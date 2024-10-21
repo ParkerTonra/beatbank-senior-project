@@ -30,25 +30,25 @@ function DraggableRow({ row, onRowSelection}: DraggableRowProps) {
 
   return (
     <tr
-  ref={setNodeRef}
-  style={style}
-  draggable
-  onDragStart={handleDragStart}
-  onDragOver={(e) => e.preventDefault()}
-  onClick={() => onRowSelection(row.original)}
-  className={`cursor-pointer ${
-    row.getIsSelected() ? "bg-gray-400" : ""
-  }`}
-  data-row-id={row.original.id}
->
+      ref={setNodeRef}
+      style={style}
+      draggable
+      onDragStart={handleDragStart}
+      onDragOver={(e) => e.preventDefault()}
+      onClick={() => onRowSelection(row.original)}
+      className={`cursor-pointer ${
+        row.getIsSelected() ? "bg-gray-400" : ""
+      }`}
+      data-row-id={row.original.id}
+    >
       {row.getVisibleCells().map((cell: Cell<Beat, unknown>) => (
         <td 
-        className="whitespace-nowrap overflow-hidden text-ellipsis" 
-        key={cell.id} 
-        style={{
-          width: cell.column.getSize(),
-          maxWidth: cell.column.getSize(),
-        }}
+          className="whitespace-nowrap overflow-hidden text-ellipsis mr-4"
+          key={cell.id}
+          style={{
+            width: cell.column.getSize(),
+            maxWidth: cell.column.getSize(),
+          }}
         >
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </td>
