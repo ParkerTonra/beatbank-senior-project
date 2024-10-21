@@ -9,7 +9,7 @@ mod schema;
 mod store;
 use diesel::prelude::*;
 use serde_json;
-use std::{env, sync::Mutex};
+use std::{env, path::Path, sync::Mutex};
 
 use crate::models::{Beat, BeatCollection};
 use tauri::{State};
@@ -46,8 +46,14 @@ fn add_beat(
     title: String,
     file_path: String,
 ) -> Result<String, String> {
+    let file_name = Path::new(&file_path)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("Unknown")
+        .to_string();
+
     let mut conn = state.conn.lock().map_err(|e| e.to_string())?;
-    match db::add_beat(&mut *conn, &title, &file_path) {
+    match db::add_beat(&mut *conn, &file_name, &file_path) {
         Ok(new_beat) => {
             println!("New beat added with id: {}", new_beat.id);
             Ok(format!("New beat added with id: {}", new_beat.id))
