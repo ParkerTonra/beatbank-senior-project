@@ -29,7 +29,7 @@ function App() {
     useSensor(MouseSensor),
     useSensor(TouchSensor)
   );
-  
+
   const handleAddToCollBtnClick = async (collectionId: number) => {
     console.log("handleAddToCollBtnClick:", collectionId);
     if (!selectedBeat) {
@@ -54,31 +54,31 @@ function App() {
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    console.log('Drag End Event:', event);
     const { active, over } = event;
-
+  
     if (!over) {
       console.log('Dropped outside any droppable area');
       return;
     }
-
-    const activeType = active.data.current?.type;
-    const activeBeatId = active.data.current?.beatId;
+  
+    const activeId = active.id.toString();
     const overId = over.id.toString();
-
-    console.log('Active ID:', active.id);
-    console.log('Active Data:', active.data.current);
-    console.log('Over ID:', over.id);
-
-    if (overId.startsWith('collection-') && activeType === 'beat') {
+  
+    if (overId.startsWith('collection-') && activeId.startsWith('beat-')) {
       const collectionId = parseInt(overId.replace('collection-', ''), 10);
-      handleAddToCollection(collectionId, activeBeatId);
-    } else if (overId.startsWith('beat-') && activeType === 'beat') {
-      const oldIndex = beats.findIndex((beat) => `beat-${beat.id}` === active.id.toString());
-      const newIndex = beats.findIndex((beat) => `beat-${beat.id}` === overId);
-
-      if (oldIndex !== newIndex) {
-        const newBeats = arrayMove(beats, oldIndex, newIndex);
+      const beatId = parseInt(activeId.replace('beat-', ''), 10);
+      handleAddToCollection(collectionId, beatId);
+    } else if (activeId.startsWith('sortable-') && overId.startsWith('sortable-')) {
+      // Handle row sorting
+      const activeIndex = beats.findIndex(
+        (beat) => `sortable-${beat.id}` === activeId
+      );
+      const overIndex = beats.findIndex(
+        (beat) => `sortable-${beat.id}` === overId
+      );
+  
+      if (activeIndex !== overIndex) {
+        const newBeats = arrayMove(beats, activeIndex, overIndex);
         setBeats(newBeats);
       }
     }
@@ -152,7 +152,7 @@ function App() {
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <Router>
-      
+
         <div className="flex h-screen bg-gray-100">
           <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} handleDragEnd={handleDragEnd} />
           <div className="flex-1 flex flex-col overflow-hidden">
@@ -165,14 +165,14 @@ function App() {
                 <div className="flex flex-row">
                   <SettingsDropdown sets={beatCollections} handleAddToCollBtnClick={handleAddToCollBtnClick} selectedBeat={selectedBeat} />
 
-                  
+
 
                 </div>
 
                 <button onClick={handleThemeChange}>
                   <div className="flex-row items-center justify-center w-52">
                     <div className="flex items-center text-center justify-center">
-                      <SunIcon className="h-6 w-6 justify-center mr-2" /> 
+                      <SunIcon className="h-6 w-6 justify-center mr-2" />
                       Toggle Theme
                     </div>
                     <div className="flex justify-center text-sm italic">
@@ -182,7 +182,8 @@ function App() {
                 </button>
               </div>
               <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
-              <SortableContext items={beats.map(beat => beat.id.toString())} strategy={verticalListSortingStrategy}>
+              <SortableContext items={beats.map((beat) => `sortable-${beat.id}`)}
+                strategy={verticalListSortingStrategy}>
                 <Routes>
                   {/* default route for main beat table */}
                   <Route
@@ -215,8 +216,8 @@ function App() {
           </div>
         </div>
         <DragOverlay>{/* Render dragged item */}</DragOverlay>
-      
-    </Router>
+
+      </Router>
     </DndContext>
   );
 }

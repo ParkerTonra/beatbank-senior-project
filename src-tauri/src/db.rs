@@ -6,7 +6,7 @@ use std::env;
 use chrono::Utc;
 
 
-use crate::{models::{Beat, BeatCollection, NewBeat, NewBeatCollection}, schema::set_beat};
+use crate::{models::{Beat, BeatCollection, NewBeat, NewBeatCollection} };
 
 pub fn establish_connection() -> SqliteConnection {
     dotenv().ok();

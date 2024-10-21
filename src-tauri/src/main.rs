@@ -12,7 +12,7 @@ use serde_json;
 use std::{env, path::Path, sync::Mutex};
 
 use crate::models::{Beat, BeatCollection};
-use tauri::{State};
+use tauri::State;
 
 struct AppState {
     conn: Mutex<SqliteConnection>,

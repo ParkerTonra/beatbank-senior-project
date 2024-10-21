@@ -165,30 +165,6 @@ function BeatTable({
     onColumnVisibilityChange: setColumnVisibility as OnChangeFn<VisibilityState>,
   })
 
-
-
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    console.log('drag end.')
-    const { active, over } = event;
-
-    if (!active || !over) return;
-
-    const beatId = Number(active.id);
-    const overId = String(over.id);
-
-    if (overId.startsWith('collection-')) {
-      // A beat was dropped onto a collection
-      const collectionId = Number(overId.split('-')[1]);
-      onAddBeatToCollection(beatId, collectionId);
-    } else if (active.id !== over.id) {
-      // The beat was reordered within the table
-      const oldIndex = beats.findIndex(beat => beat.id === beatId);
-      const newIndex = beats.findIndex(beat => beat.id === Number(over.id));
-      const newBeats = arrayMove(beats, oldIndex, newIndex);
-      onBeatsChange(newBeats);
-    }
-  };
 //TODO: save row order
   // const saveRowOrder = async (beatsToSave: Beat[]) => {
   //   const rowOrder = beatsToSave.map((beat, index) => ({
@@ -215,12 +191,6 @@ function BeatTable({
 
   return (
     <div className="flex flex-col h-full w-full overflow-y-auto select-none">
-      <DndContext
-        collisionDetection={closestCenter}
-        modifiers={[restrictToVerticalAxis]}
-        onDragEnd={handleDragEnd}
-        sensors={sensors}
-      >
         <table className="w-full mb-96">
           <thead>
             {tableInstance.getHeaderGroups().map((headerGroup) => (
@@ -255,23 +225,15 @@ function BeatTable({
             ))}
           </thead>
           <tbody>
-            <SortableContext
-              items={dataIds}
-              strategy={verticalListSortingStrategy}
-            >
               {tableInstance.getRowModel().rows.map((rowElement) => (
                 <DraggableRow
                   row={rowElement}
                   key={rowElement.id}
-                  onRowSelection={handleRowSelection}
-                  onDragEnd={handleDragEnd}
-                  
+                  onRowSelection={handleRowSelection}    
                 />
               ))}
-            </SortableContext>
           </tbody>
         </table>
-      </DndContext>
       <div className="flex px-4 border border-black shadow rounded mt-12 text-sm space-x-4">
         <div className="px-1 border-b border-black ">
           <label>
