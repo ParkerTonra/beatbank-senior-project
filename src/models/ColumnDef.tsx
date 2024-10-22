@@ -35,7 +35,7 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
     size:35,
   },
   {
-    accessorKey: "key",
+    accessorKey: "musical_key",
     header: "Key",
     size:35,
     enableResizing: false,
@@ -51,7 +51,7 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
   },
   
   {
-    accessorKey: "date_added",
+    accessorKey: "date_created",
     header: "Date Added",
   },
   {
