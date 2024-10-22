@@ -62,8 +62,7 @@ fn add_beat(
     let file_name = Path::new(&file_path)
         .file_name()
         .and_then(|name| name.to_str())
-        // get rid of the extension
-        .and_then(|name| name.split('.').next())
+        .and_then(|name| name.rsplitn(2, '.').nth(1)) // Split from the end, get the part before the last period
         .unwrap_or("Unknown")
         .to_string();
 
