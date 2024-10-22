@@ -125,12 +125,6 @@ function BeatTable({
     [onBeatPlay]
   );
 
-  // Unused. Safe to delete?
-  // const dataIds: UniqueIdentifier[] = useMemo(
-  //   () => beats.map(({ id }) => id),
-  //   [beats]
-  // );
-
   const tableInstance = useReactTable<Beat>({
     columns: finalColumnDef,
     data: beats,

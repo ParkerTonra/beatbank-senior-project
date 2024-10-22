@@ -117,8 +117,6 @@ function App() {
     fetchData();
   }, []);
 
-  //const [collections, setCollections] = useState<BeatCollection[]>(beatCollections);
-
   useEffect(() => {
     const fetchSettings = async () => {
       console.log("loading settings, path:", settingsPath);
