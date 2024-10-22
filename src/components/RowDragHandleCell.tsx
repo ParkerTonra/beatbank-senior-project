@@ -1,19 +1,20 @@
 import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface RowDragHandleCellProps {
   rowId: string;
 }
 
 export const RowDragHandleCell: React.FC<RowDragHandleCellProps> = ({ rowId }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({
-    id: rowId,
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: `sortable-${rowId}`, // Unique ID for sortable handle
   });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    cursor: isDragging ? 'grabbing' : 'grab',
+  };
 
   return (
     <button
@@ -21,14 +22,11 @@ export const RowDragHandleCell: React.FC<RowDragHandleCellProps> = ({ rowId }) =
       {...attributes}
       {...listeners}
       className="bg-transparent playback-control"
-      style={{
-        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-        transition,
-      }}
+      style={style}
     >
       ≡
     </button>
   );
 };
 
-export default RowDragHandleCell;
+export default RowDragHandleCell

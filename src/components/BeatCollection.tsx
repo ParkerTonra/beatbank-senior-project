@@ -3,8 +3,13 @@ import { useParams } from 'react-router-dom';
 import BeatTable from './BeatTable';
 import { useBeats } from '../hooks/useBeats';
 import { Beat } from '../bindings';
+import { DragEndEvent } from '@dnd-kit/core';
 
-const BeatCollectionComponent: React.FC = () => {
+interface BeatCollProps {
+  onDragEnd: (event: DragEndEvent) => void;
+}
+
+const BeatCollectionComponent: React.FC<BeatCollProps> = ({ onDragEnd }) => {
   const { id } = useParams<{ id: string }>();
   const { 
     beats, 
@@ -44,10 +49,6 @@ const BeatCollectionComponent: React.FC = () => {
     console.log('Adding beat to collection:', beatId, collectionId);
   };
 
-  const handleDragEnd = (event: any) => {
-    // Implement this function to handle drag end events
-    console.log('Drag ended:', event);
-  };
 
   return (
     <div>
@@ -66,7 +67,7 @@ const BeatCollectionComponent: React.FC = () => {
         columnVisibility={columnVisibility}
         setColumnVisibility={setColumnVisibility}
         onAddBeatToCollection={handleAddBeatToCollection}
-        onDragEnd={handleDragEnd}
+        onDragEnd={onDragEnd}
       />
     </div>
   );
