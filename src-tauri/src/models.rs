@@ -103,7 +103,7 @@ pub struct BeatInCollection {
 pub struct BeatChangeset {
     pub id: i32,
     pub title: Option<String>,
-    pub bpm: Option<i32>,
+    pub bpm: Option<f64>,
     pub musical_key: Option<String>,
     pub duration: Option<i32>,
     pub artist: Option<String>,

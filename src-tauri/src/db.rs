@@ -1,9 +1,16 @@
 use diesel::result::Error as DieselError;
-
+use std::error::Error;
 use chrono::Utc;
 use diesel::prelude::*;
 use dotenvy::dotenv;
 use std::env;
+
+use std::path::Path;
+use std::fs::File;
+use symphonia::core::formats::FormatOptions;
+use symphonia::core::io::MediaSourceStream;
+use symphonia::core::meta::MetadataOptions;
+use symphonia::core::probe::Hint;
 
 use crate::models::{Beat, BeatCollection, NewBeat, NewBeatCollection, BeatChangeset};
 
@@ -25,6 +32,8 @@ pub fn add_beat(
 ) -> Result<Beat, DieselError> {
     use crate::schema::beats;
 
+    let calculated_duration: Option<i32> = get_duration_from_file_path(&file_path).ok();
+
     let new_beat = NewBeat {
         title,
         file_path,
@@ -33,7 +42,8 @@ pub fn add_beat(
         genre: None,
         year: None,
         track_number: None,
-        duration: None,
+        // get the duration from the file path
+        duration: calculated_duration,
         composer: None,
         lyricist: None,
         cover_art: None,
@@ -47,6 +57,43 @@ pub fn add_beat(
         .values(&new_beat)
         .returning(Beat::as_returning())
         .get_result(conn)
+}
+
+fn get_duration_from_file_path(file_path: &str) -> Result<i32, Box<dyn Error>> {
+    // Create a media source from the file
+    let file = File::open(Path::new(file_path))?;
+    let mss = MediaSourceStream::new(Box::new(file), Default::default());
+
+    // Create a hint to help the format registry guess the format of the file
+    let hint = Hint::new();
+
+    // Use default options for format and metadata
+    let format_opts = FormatOptions::default();
+    let metadata_opts = MetadataOptions::default();
+
+    // Probe the media source to get the format
+    let probed = symphonia::default::get_probe()
+        .format(&hint, mss, &format_opts, &metadata_opts)?;
+
+    // Get the format reader
+    let format = probed.format;
+
+    // Get the duration from the first track (assuming there's at least one track)
+    if let Some(track) = format.tracks().first() {
+        // Access the codec parameters to calculate duration
+        let duration_ts = track.codec_params.n_frames
+            .unwrap_or(0); // In frames (samples for audio)
+
+        // Get the time base (units for time calculations)
+        let time_base = track.codec_params.time_base.unwrap_or_default();
+
+        // Calculate the duration in seconds using the time base
+        let duration_secs = time_base.calc_time(duration_ts).seconds;
+
+        Ok(duration_secs as i32)
+    } else {
+        Err("No tracks found in the media file.".into())
+    }
 }
 
 pub fn delete_beat(conn: &mut SqliteConnection, id: i32) -> Result<(), DieselError> {
