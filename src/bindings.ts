@@ -31,7 +31,7 @@ export type BeatCollection = {
     id: boolean;
     title: boolean;
     bpm: boolean;
-    key: boolean;
+    musical_key: boolean;
     duration: boolean;
     artist: boolean;
     date_added: boolean;

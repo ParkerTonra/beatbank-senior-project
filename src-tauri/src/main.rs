@@ -6,8 +6,6 @@ mod db;
 mod models;
 mod schema;
 mod store;
-mod audio_analysis; // <-- Add this line
-
 use diesel::prelude::*;
 use serde_json;
 use std::{
@@ -215,9 +213,6 @@ fn add_beat_to_collection(
 }
 
 fn main() {
-    // Initialize the Python interpreter
-    pyo3::prepare_freethreaded_python();
-
     println!("Starting beatbank...");
 
     let conn = DatabaseConnection {
@@ -270,12 +265,6 @@ fn main() {
                 });
             }
         })
-            store::load_settings, 
-            store::save_settings, 
-            store::get_settings_path,
-            analyze_audio_command
-        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-

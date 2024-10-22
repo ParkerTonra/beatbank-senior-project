@@ -31,3 +31,4 @@ database.sqlite
 #.env
 
 .venv
+/src-tauri/src/__pycache__
