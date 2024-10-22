@@ -69,10 +69,8 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
 
       </div>
       <div className="text-sm justify-center italic w-52 whitespace-nowrap overflow-hidden text-ellipsis">
-  selected: <span>{selectedBeat ? selectedBeat.title : 'None'}</span>
-</div>
-
-      {/* <h2>Selected Beat : {selectedBeat ? selectedBeat.title : 'None'}</h2> */}
+        selected: <span>{selectedBeat ? selectedBeat.title : 'None'}</span>
+      </div>
     </button>
 
       {isOpen && (

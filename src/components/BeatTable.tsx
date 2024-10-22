@@ -159,8 +159,8 @@ function BeatTable({
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-y-auto select-none">
-       <table className="w-full mb-96">
+    <div className="flex flex-col h-[calc(100%-250px)] w-full select-none">
+       <table className="w-full mb-4 h-full">
           <thead>
             {tableInstance.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
@@ -182,9 +182,9 @@ function BeatTable({
                         )}
                       <div>
                         {header.column.getIsSorted() === "asc" ? (
-                          <span>^</span>
+                          <span className="pi pi-arrow-up text-xs" />
                         ) : header.column.getIsSorted() === "desc" ? (
-                            <span>v</span>
+                            <span className="pi pi-arrow-down text-xs" />
                           ) :
                           null
                         }
@@ -210,14 +210,16 @@ function BeatTable({
                   row={rowElement as Row<Beat>}
                   key={rowElement.id}
                   onRowSelection={handleRowSelection}
+                  isSelected={selectedBeat?.id === rowElement.id}
                 />
               ))}
+            <tr/>
           </tbody>
         </table>
         <Dialog
           header="Edit Columns"
           visible={showEditColumnsDialog}
-          className="bg-blue-600 w-3/4 h-1/2 p-4 rounded-md"
+          className="bg-blue-900 w-3/4 h-1/2 p-4 rounded-md border-2 border-black"
           modal
           onHide={() => setShowEditColumnsDialog(false)}
         >
@@ -255,7 +257,7 @@ function BeatTable({
         </Dialog>
         <button
           onClick={() => setShowEditColumnsDialog(true)}
-          className="ml-2"
+          className="ml-2 mb-2"
           id="edit-columns-tooltip"
         >
           Edit Columns

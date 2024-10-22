@@ -127,7 +127,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
       <Dialog
         header="Upload Status"
         visible={showStatusDialog}
-        className="bg-blue-600 w-3/4 h-1/2 p-4 rounded-md"
+        className="bg-blue-900 w-3/4 h-1/2 p-4 rounded-md border-2 border-black"
         modal
         onHide={() => {setShowStatusDialog(false)}}
       >

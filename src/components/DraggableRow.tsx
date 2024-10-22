@@ -6,9 +6,10 @@ import { CSS } from '@dnd-kit/utilities';
 interface DraggableRowProps {
   row: Row<Beat>;
   onRowSelection: (beat: Beat) => void;
+  isSelected: boolean;
 }
 
-function DraggableRow({ row, onRowSelection }: DraggableRowProps) {
+function DraggableRow({ row, onRowSelection, isSelected }: DraggableRowProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `beat-${row.original.id}`, // Unique ID for draggable beat
     data: {
@@ -30,13 +31,11 @@ function DraggableRow({ row, onRowSelection }: DraggableRowProps) {
       {...attributes}
       {...listeners} // Apply draggable attributes
       onClick={() => onRowSelection(row.original)}
-      className={`cursor-pointer ${row.getIsSelected() ? 'bg-gray-400' : ''}`}
+      className={`cursor-pointer max-h-[50px] ${row.getIsSelected() || isSelected ? 'bg-blue-900' : ''}`}
     >
-      {/* Include the drag handle cell */}
-
       {row.getVisibleCells().map((cell: Cell<Beat, unknown>) => (
         <td
-          className="whitespace-nowrap overflow-hidden text-ellipsis"
+          className="whitespace-nowrap overflow-hidden text-ellipsis h-[40px]"
           key={cell.id}
           style={{
             width: cell.column.getSize(),
