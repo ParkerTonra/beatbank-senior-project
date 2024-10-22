@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Beat, BeatCollection } from "./bindings";
+import { Beat } from "./bindings";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
 import "./Main.css";
@@ -10,7 +10,7 @@ import BeatTable from "./components/BeatTable";
 import { SunIcon } from "lucide-react";
 import { useBeats } from "./hooks/useBeats";
 import { loadSettings, saveSettings, getSettingsPath } from './store';
-import { DndContext, DragEndEvent, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { invoke } from "@tauri-apps/api/tauri";
 import { message } from "@tauri-apps/api/dialog";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -32,13 +32,11 @@ function App() {
   );
 
   const handleAddToCollBtnClick = async (collectionId: number) => {
-    console.log("handleAddToCollBtnClick:", collectionId);
     if (!selectedBeat) {
       message('Please select a beat first.', { title: 'Error', type: 'error' });
       return;
     }
     let beatId = selectedBeat.id;
-    console.log("Current beat id:", beatId, "current set id:", collectionId);
     await invoke('add_beat_to_collection', { beatId, collectionId });
     // Refresh data or update state as needed
     fetchData();
@@ -54,8 +52,25 @@ function App() {
     }
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    const activeId = event.active.id.toString();
+
+    // Check if it's a beat being dragged (starts with 'sortable-' or 'beat-')
+    if (activeId.startsWith('sortable-') || activeId.startsWith('beat-')) {
+      // Extract the beat ID
+      const beatId = parseInt(activeId.replace(/^(sortable-|beat-)/, ''), 10);
+
+      // Find the corresponding beat
+      const draggedBeat = beats.find(beat => beat.id === beatId);
+
+      // Set it as the selected beat
+      if (draggedBeat) {
+        setSelectedBeat(draggedBeat);
+      }
+    }
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
-    console.log('Drag End Event:', event);
     const { active, over } = event;
 
     if (!over) {
@@ -63,23 +78,24 @@ function App() {
       return;
     }
 
-    const activeType = active.data.current?.type;
-    const activeBeatId = active.data.current?.beatId;
+    const activeId = active.id.toString();
     const overId = over.id.toString();
 
-    console.log('Active ID:', active.id);
-    console.log('Active Data:', active.data.current);
-    console.log('Over ID:', over.id);
-
-    if (overId.startsWith('collection-') && activeType === 'beat') {
+    if (overId.startsWith('collection-') && activeId.startsWith('beat-')) {
       const collectionId = parseInt(overId.replace('collection-', ''), 10);
-      handleAddToCollection(collectionId, activeBeatId);
-    } else if (overId.startsWith('beat-') && activeType === 'beat') {
-      const oldIndex = beats.findIndex((beat) => `beat-${beat.id}` === active.id.toString());
-      const newIndex = beats.findIndex((beat) => `beat-${beat.id}` === overId);
+      const beatId = parseInt(activeId.replace('beat-', ''), 10);
+      handleAddToCollection(collectionId, beatId);
+    } else if (activeId.startsWith('sortable-') && overId.startsWith('sortable-')) {
+      // Handle row sorting
+      const activeIndex = beats.findIndex(
+        (beat) => `sortable-${beat.id}` === activeId
+      );
+      const overIndex = beats.findIndex(
+        (beat) => `sortable-${beat.id}` === overId
+      );
 
-      if (oldIndex !== newIndex) {
-        const newBeats = arrayMove(beats, oldIndex, newIndex);
+      if (activeIndex !== overIndex) {
+        const newBeats = arrayMove(beats, activeIndex, overIndex);
         setBeats(newBeats);
       }
     }
@@ -102,15 +118,13 @@ function App() {
     fetchData();
   }, []);
 
-  const [collections, setCollections] = useState<BeatCollection[]>(beatCollections);
-
   useEffect(() => {
     const fetchSettings = async () => {
+      console.log("loading settings, path:", settingsPath);
       const settings = await loadSettings(); // Load settings from the backend
       setTheme(settings.theme); // Update the theme state with the loaded settings
 
       const path = await getSettingsPath(); // Fetch and log the settings path
-      console.log("Settings path:", path);
       setSettingsPath(path); // Update the state to display the settings path
     };
 
@@ -136,26 +150,18 @@ function App() {
     setBeats(newBeats);
   };
 
-  const handleDrop = (collectionId: number, beatId: number) => {
-    console.log("handleDrop:", collectionId, beatId);
-    //commitToCollection(beatId, collectionId);
-  }
-
   const handleBeatSelection = (beat: Beat) => {
-    console.log("beat selected:", beat);
     setSelectedBeat(beat);
   };
-
-  console.log("beatCollections:", beatCollections);
 
   if (error) return <div className="flex items-center justify-center h-screen">Error: {error.message}</div>;
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
       <Router>
 
         <div className="flex h-screen bg-gray-100">
-          <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} onDrop={handleDrop} handleDragEnd={handleDragEnd} />
+          <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} />
           <div className="flex-1 flex flex-col overflow-hidden">
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
               <h1 className="text-3xl font-bold font-guerilla mb-4 py-0">BEATBANK</h1>
@@ -177,7 +183,8 @@ function App() {
                 </button>
               </div>
               <UploadBeat fetchData={fetchData} selectedBeat={selectedBeat} />
-              <SortableContext items={beats.map(beat => beat.id.toString())} strategy={verticalListSortingStrategy}>
+              <SortableContext items={beats.map((beat) => `sortable-${beat.id}`)}
+                strategy={verticalListSortingStrategy}>
                 <Routes>
                   {/* default route for main beat table */}
                   <Route
@@ -201,7 +208,7 @@ function App() {
                   />
                   <Route
                     path="/collection/:id"
-                    element={<BeatCollTable />}
+                    element={<BeatCollTable onDragEnd={handleDragEnd}/>}
                   />
                 </Routes>
 

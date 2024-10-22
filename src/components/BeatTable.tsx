@@ -7,27 +7,16 @@ import {
   ColumnResizeMode,
   ColumnSizingState,
   OnChangeFn,
-  VisibilityState, Row,
+  VisibilityState,
+  SortingState,
+  Row,
+  getSortedRowModel,
 } from "@tanstack/react-table";
 import { createColumnDef } from "./../models/ColumnDef.tsx";
 import { Beat, ColumnVis, EditThisBeat } from "./../bindings.ts";
-import { UniqueIdentifier } from "@dnd-kit/core";
 import {
-  DndContext,
   DragEndEvent,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
 } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import DraggableRow from "./DraggableRow.tsx";
 import { invoke } from "@tauri-apps/api/tauri";
 import EditBeatCard from "./EditBeatCard.tsx";
@@ -56,14 +45,12 @@ function BeatTable({
   beats,
   // TODO: audio player
   // onBeatPlay,
-  onAddBeatToCollection,
   onBeatSelect,
   isEditing,
   setIsEditing,
   selectedBeat,
   setSelectedBeat,
   fetchData,
-  onBeatsChange,
   columnVisibility,
   setColumnVisibility,
 }: BeatTableProps) {
@@ -76,6 +63,7 @@ function BeatTable({
   const [isShiftPressed, setIsShiftPressed] = useState(false);
 
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+  const [sorting, setSorting] = useState<SortingState>([])
   const [showEditColumnsDialog, setShowEditColumnsDialog] = useState(false);
 
   // react based on key press state:
@@ -143,11 +131,6 @@ function BeatTable({
     [onBeatPlay]
   );
 
-  const dataIds: UniqueIdentifier[] = useMemo(
-    () => beats.map(({ id }) => id),
-    [beats]
-  );
-
   const tableInstance = useReactTable<Beat>({
     columns: finalColumnDef,
     data: beats,
@@ -161,55 +144,15 @@ function BeatTable({
       rowSelection,
       columnVisibility,
       columnSizing,
+      sorting,
     },
     enableRowSelection: true,
     enableMultiRowSelection: true,
     onColumnVisibilityChange: setColumnVisibility as OnChangeFn<VisibilityState>,
+    enableSorting: true,
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
   })
-
-
-
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    console.log('drag end.')
-    const { active, over } = event;
-
-    if (!active || !over) return;
-
-    const beatId = Number(active.id);
-    const overId = String(over.id);
-
-    if (overId.startsWith('collection-')) {
-      // A beat was dropped onto a collection
-      const collectionId = Number(overId.split('-')[1]);
-      onAddBeatToCollection(beatId, collectionId);
-    } else if (active.id !== over.id) {
-      // The beat was reordered within the table
-      const oldIndex = beats.findIndex(beat => beat.id === beatId);
-      const newIndex = beats.findIndex(beat => beat.id === Number(over.id));
-      const newBeats = arrayMove(beats, oldIndex, newIndex);
-      onBeatsChange(newBeats);
-    }
-  };
-//TODO: save row order
-  // const saveRowOrder = async (beatsToSave: Beat[]) => {
-  //   const rowOrder = beatsToSave.map((beat, index) => ({
-  //     row_id: beat.id.toString(),
-  //     row_number: index + 1,
-  //   }));
-  //   try {
-  //     await invoke("save_row_order", { rowOrder });
-  //     console.log("Row order saved successfully");
-  //   } catch (error) {
-  //     console.error("Error saving row order:", error);
-  //   }
-  // };
-
-  const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  );
 
   if (columnVisibility === undefined) {
     return <div>Loading...</div>;
@@ -217,32 +160,37 @@ function BeatTable({
 
   return (
     <div className="flex flex-col h-full w-full overflow-y-auto select-none">
-      <DndContext
-        collisionDetection={closestCenter}
-        modifiers={[restrictToVerticalAxis]}
-        onDragEnd={handleDragEnd}
-        sensors={sensors}
-      >
-        <table className="w-full mb-96">
+       <table className="w-full mb-96">
           <thead>
             {tableInstance.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="relative pr-4 text-left border-gray-800 border-b-4"
+                    className="relative pr-4 text-left border-gray-800 border-b-4 cursor-pointer mr-2"
                     style={{
                       width: header.getSize(),
                     }}
+                    onClick={() => header.column.toggleSorting()}
                   >
-                    <div className="flex items-center truncate">
+                    <div className="flex items-center truncate w-full justify-between">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                      <div>
+                        {header.column.getIsSorted() === "asc" ? (
+                          <span>^</span>
+                        ) : header.column.getIsSorted() === "desc" ? (
+                            <span>v</span>
+                          ) :
+                          null
+                        }
+                      </div>
                     </div>
+
                     {header.column.getCanResize() && (
                       <div
                         onMouseDown={header.getResizeHandler()}
@@ -257,99 +205,91 @@ function BeatTable({
             ))}
           </thead>
           <tbody>
-            <SortableContext
-              items={dataIds}
-              strategy={verticalListSortingStrategy}
-            >
               {tableInstance.getRowModel().rows.map((rowElement) => (
                 <DraggableRow
                   row={rowElement as Row<Beat>}
                   key={rowElement.id}
                   onRowSelection={handleRowSelection}
-                  onDragEnd={handleDragEnd}
-                  
                 />
               ))}
-            </SortableContext>
           </tbody>
         </table>
-      </DndContext>
-      <Dialog
-        header="Edit Columns"
-        visible={showEditColumnsDialog}
-        className="bg-blue-600 w-3/4 h-1/2 p-4 rounded-md"
-        modal
-        onHide={() => setShowEditColumnsDialog(false)}
-      >
-        <div className="flex px-4 shadow rounded mt-12 text-sm space-x-4">
-          <div className="px-1">
-            <label>
-              <input
-                className="flex-row"
-                type="checkbox"
-                checked={tableInstance.getIsAllColumnsVisible()}
-                onChange={tableInstance.getToggleAllColumnsVisibilityHandler()}
-              />{" "}
-              Toggle All
-            </label>
-          </div>
+        <Dialog
+          header="Edit Columns"
+          visible={showEditColumnsDialog}
+          className="bg-blue-600 w-3/4 h-1/2 p-4 rounded-md"
+          modal
+          onHide={() => setShowEditColumnsDialog(false)}
+        >
+          <div className="flex px-4 shadow rounded mt-12 text-sm space-x-4">
+            <div className="px-1">
+              <label>
+                <input
+                  className="flex-row"
+                  type="checkbox"
+                  checked={tableInstance.getIsAllColumnsVisible()}
+                  onChange={tableInstance.getToggleAllColumnsVisibilityHandler()}
+                />{" "}
+                Toggle All
+              </label>
+            </div>
 
-          {tableInstance.getAllLeafColumns().map((column) => {
-            if (column.id === "drag-handle") {
-              return;
-            }
-            return (
-              <div key={column.id} className="mb-36">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={column.getIsVisible()}
-                    onChange={column.getToggleVisibilityHandler()}
-                  />{" "}
-                  {column.id}
-                </label>
-              </div>
-            );
-          })}
-        </div>
-      </Dialog>
-      <button
-        onClick={() => setShowEditColumnsDialog(true)}
-        className="ml-2"
-        id="edit-columns-tooltip"
-      >
-        Edit Columns
-      </button>
-      {isEditing && selectedBeat && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <EditBeatCard
-              beat={selectedBeat}
-              onClose={() => {
-                setIsEditing(false);
-                setSelectedBeat(null);
-                setRowSelection({});
-              }}
-              onSave={(updatedBeat: EditThisBeat) => {
-                setIsEditing(false);
-                setSelectedBeat(null);
-                setRowSelection({});
-
-                invoke("update_beat", { beat: updatedBeat })
-                  .then((response) => {
-                    console.log("Response from update_beat:", response);
-                    console.log("Fetching updated data");
-                    if (fetchData) fetchData();
-                  })
-                  .catch((error) => {
-                    console.error("Error updating beat:", error);
-                  });
-              }}
-            />
+            {tableInstance.getAllLeafColumns().map((column) => {
+              if (column.id === "drag-handle") {
+                return;
+              }
+              return (
+                <div key={column.id} className="mb-36">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={column.getIsVisible()}
+                      onChange={column.getToggleVisibilityHandler()}
+                    />{" "}
+                    {column.id}
+                  </label>
+                </div>
+              );
+            })}
           </div>
-        </div>
-      )}
-    </div>
+        </Dialog>
+        <button
+          onClick={() => setShowEditColumnsDialog(true)}
+          className="ml-2"
+          id="edit-columns-tooltip"
+        >
+          Edit Columns
+        </button>
+        {isEditing && selectedBeat && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <EditBeatCard
+                beat={selectedBeat}
+                onClose={() => {
+                  setIsEditing(false);
+                  setSelectedBeat(null);
+                  setRowSelection({});
+                }}
+                onSave={(updatedBeat: EditThisBeat) => {
+                  setIsEditing(false);
+                  setSelectedBeat(null);
+                  setRowSelection({});
+
+                  invoke("update_beat", { beat: updatedBeat })
+                    .then((response) => {
+                      console.log("Response from update_beat:", response);
+                      console.log("Fetching updated data");
+                      if (fetchData) fetchData();
+                    })
+                    .catch((error) => {
+                      console.error("Error updating beat:", error);
+                    });
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
   );
 }
 
