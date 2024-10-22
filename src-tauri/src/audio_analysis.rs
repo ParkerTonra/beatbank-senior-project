@@ -102,7 +102,7 @@ pub fn analyze_audio(file_path: &str) -> PyResult<(String, f64)> {
         let args = PyTuple::new_bound(py, vec![py_file_path]);
         let result: Bound<'_, PyAny> = my_module.call_method("analyze", args, None)?;
         let extracted_result: (String, f64) = result.extract()?;
-
+        
         Ok(extracted_result)
     })
 }
