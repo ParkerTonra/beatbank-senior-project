@@ -1,22 +1,16 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { BeatCollection } from "./../bindings";
-import { DragEndEvent, useDroppable } from "@dnd-kit/core";
 import { Link } from 'react-router-dom';
 import DroppableCollection from "./DroppableCollection";
 
 interface SidebarProps {
   collections: BeatCollection[];
   onAddBeatToCollection: (collectionId: number, beatId: number) => void;
-  onDrop: (collectionId: number, beatId: number) => void;
-  handleDragEnd: (event: DragEndEvent) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   collections,
-  onDrop,
-  onAddBeatToCollection,
-  handleDragEnd,
 }) => {
   const [title, setTitle] = useState("");
   const [beatCollections, setBeatCollections] = useState<BeatCollection[]>(collections);
@@ -74,7 +68,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             <DroppableCollection
               key={collection.id}
               collection={collection}
-              onAddBeatToCollection={onAddBeatToCollection}
             />
           ))}
         </ul>

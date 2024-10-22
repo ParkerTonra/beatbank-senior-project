@@ -14,15 +14,13 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
   const [uploadStatus, setUploadStatus] = useState<string>('');
 
   const handleFileDelete = async () => {
-    console.log("handleFileDelete");
     if (!selectedBeat) {
-      console.log("No beat selected");
+      console.warn("No beat selected");
       setUploadStatus("No beat selected");
       return;
     }
     try {
       const result = await invoke('delete_beat', { id: selectedBeat.id });
-      console.log(result);
       fetchData();
       setUploadStatus(prevStatus => prevStatus + `\n${result}`);
   } catch (error) {
@@ -44,8 +42,7 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
         if (validExtensions.indexOf(extension) >= 0) {
           setSelectedFiles(filePaths);
           promises.push(invoke('add_beat', {
-            title: filepath.name || 'Unknown', // Use filename as title
-            filePath: filepath.path,
+            filePath: filepath.path
           }));
         }
       }
@@ -98,7 +95,6 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
         for (const filePath of (Array.isArray(filePaths) ? filePaths : [filePaths])) {
           try {
             const result = await invoke('add_beat', {
-              title: filePath.split('/').pop() || 'Unknown', // Use filename as title
               filePath: filePath,
             });
             fetchData();

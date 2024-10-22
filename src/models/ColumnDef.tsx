@@ -12,7 +12,9 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
   {
     accessorKey: "drag-handle",
     header: "",
-    cell: ({ row }: { row: Row }) => <RowDragHandleCell rowId={row.id} />,
+    cell: ({ row }: { row: Row }) => (
+      <RowDragHandleCell rowId={row.original.id.toString()} />
+    ),
     size: 35,
     enableHiding: false,
     enableResizing: false,
@@ -33,7 +35,7 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
     size:35,
   },
   {
-    accessorKey: "key",
+    accessorKey: "musical_key",
     header: "Key",
     size:35,
     enableResizing: false,
@@ -49,7 +51,7 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
   },
   
   {
-    accessorKey: "date_added",
+    accessorKey: "date_created",
     header: "Date Added",
   },
   {
@@ -61,7 +63,7 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
     header: "Play",
     cell: ({ row }) => (
       <RowPlayHandleCell
-        rowId={row.id.toString()}
+        rowId={row.original.id.toString()}
         onPlay={() => onBeatPlay(row.original)}
       />
     ),
