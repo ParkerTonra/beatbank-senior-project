@@ -27,9 +27,9 @@ export const useBeats = () => {
   const [currentCollection, setCurrentCollection] = useState<BeatCollection | null>(null);
   // fetch sets, data, and column visibility for initialization
   const fetchData = useCallback(async () => {
-    console.log("Fetching data...");
     setLoading(true);
     setError(null);
+    console.log("Fetching data...");
     try {
       const [beatsResult, columnVisResult, collectionsResult] = await Promise.all([
         invoke<string>("fetch_beats"),
@@ -47,12 +47,9 @@ export const useBeats = () => {
 
       setColumnVisibility({ ...defaultColumnVisibility, ...columnVis });
 
-      console.log("collectionsResult:", collectionsResult);
 
       let myBeatCollections = JSON.parse(collectionsResult);
       setBeatCollections(myBeatCollections);
-      console.log("Fetched collections:", myBeatCollections);
-      
     } catch (error) {
       setError(error as Error);
       console.error("Error fetching data:", error);
@@ -72,9 +69,6 @@ export const useBeats = () => {
 
       // Fetch beats in the collection
       const beatsResponse = await invoke<Beat[]>('get_beats_in_collection', { id: setId });
-      
-      console.log('Received beat collection:', collectionResponse);
-      console.log('Received beats:', beatsResponse);
 
       if (Array.isArray(beatsResponse)) {
         setBeats(beatsResponse);
