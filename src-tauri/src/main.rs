@@ -105,28 +105,28 @@ fn analyze_and_update_beat(
     println!("Connection check passed");
 
     // Call your Python analysis function
-    match analyze_audio(&file_path) {
-        Ok((key, tempo)) => {
-            println!("Analysis Result: Key: {}, Tempo: {}", key, tempo); // Debug output
-            let musical_key_str = key.to_string(); // Ensure key is a String
+    // match analyze_audio(&file_path) {
+    //     Ok((key, tempo)) => {
+    //         println!("Analysis Result: Key: {}, Tempo: {}", key, tempo); // Debug output
+    //         let musical_key_str = key.to_string(); // Ensure key is a String
 
-            // Update the database
-            diesel::update(crate::schema::beats::dsl::beats.find(beat_id))
-                .set((
-                    crate::schema::beats::dsl::musical_key.eq(Some(musical_key_str)),
-                    crate::schema::beats::dsl::bpm.eq(Some(tempo)),
-                ))
-                .execute(conn)
-                .map_err(|e| {
-                    println!("Error updating beat: {:?}", e); // Log the error
-                    e.to_string()
-                })?;
-        }
-        Err(e) => {
-            println!("Failed to analyze audio. Error: {}", e); // Log the error
-            return Err(e.to_string()); // Return the error as a Result
-        }
-    }
+    //         // Update the database
+    //         diesel::update(crate::schema::beats::dsl::beats.find(beat_id))
+    //             .set((
+    //                 crate::schema::beats::dsl::musical_key.eq(Some(musical_key_str)),
+    //                 crate::schema::beats::dsl::bpm.eq(Some(tempo)),
+    //             ))
+    //             .execute(conn)
+    //             .map_err(|e| {
+    //                 println!("Error updating beat: {:?}", e); // Log the error
+    //                 e.to_string()
+    //             })?;
+    //     }
+    //     Err(e) => {
+    //         println!("Failed to analyze audio. Error: {}", e); // Log the error
+    //         return Err(e.to_string()); // Return the error as a Result
+    //     }
+    // }
 
     Ok(())
 }
