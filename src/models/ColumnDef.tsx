@@ -51,7 +51,7 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
   },
   
   {
-    accessorKey: "date_added",
+    accessorKey: "date_created",
     header: "Date Added",
   },
   {
