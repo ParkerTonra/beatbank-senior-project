@@ -169,7 +169,7 @@ function App() {
 
               <div className="flex justify-center gap-8">
                 <div className="flex flex-row">
-                  <SettingsDropdown sets={beatCollections} handleAddToCollBtnClick={handleAddToCollBtnClick} selectedBeat={selectedBeat} />
+                  <SettingsDropdown sets={beatCollections} handleAddToCollBtnClick={handleAddToCollBtnClick} selectedBeat={selectedBeat} setIsEditing={setIsEditing} />
 
 
 

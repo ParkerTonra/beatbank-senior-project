@@ -18,6 +18,9 @@ struct DatabaseConnection {
     conn: SqliteConnection,
 }
 
+
+
+
 impl Drop for DatabaseConnection {
     fn drop(&mut self) {
         // Optimize the database before closing
@@ -83,6 +86,15 @@ fn delete_beat(id: i32, state: State<AppState>) -> Result<(), String> {
     let conn = &mut conn_guard.conn;
     db::delete_beat(&mut *conn, id).map_err(|e| e.to_string())?;
     Ok(())
+}
+use crate::models::BeatChangeset;
+#[tauri::command]
+fn update_beat(beat: BeatChangeset, state: State<AppState>) -> Result<(), String> {
+    let mut conn_guard = state.conn.lock().map_err(|e| e.to_string())?;
+    let conn = &mut conn_guard.conn;
+
+    db::update_beat(conn, beat)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -180,6 +192,7 @@ fn main() {
             fetch_beats, 
             add_beat, 
             delete_beat,
+            update_beat,
             fetch_column_vis, 
             new_beat_collection, 
             fetch_collections,
