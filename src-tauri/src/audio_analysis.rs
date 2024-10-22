@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pyo3::types::{PyAny, PyTuple, PyModule, PyString, PyList};
+use pyo3::types::{PyAny, PyList, PyModule, PyString, PyTuple};
 use pyo3::wrap_pyfunction;
 use std::env;
 use std::path::PathBuf;
@@ -49,7 +49,9 @@ pub fn analyze_audio(file_path: &str) -> PyResult<(String, f64)> {
         let sys: Bound<'_, PyModule> = py.import_bound("sys")?;
 
         // Set the Python executable to the one inside the virtual environment
-        let venv_python_path_str = venv_python_path.to_str().expect("Failed to convert path to str");
+        let venv_python_path_str = venv_python_path
+            .to_str()
+            .expect("Failed to convert path to str");
         println!("Setting Python executable to: {:?}", venv_python_path_str);
         sys.setattr("executable", venv_python_path_str)?;
 
@@ -59,21 +61,37 @@ pub fn analyze_audio(file_path: &str) -> PyResult<(String, f64)> {
 
         // Ensure sys.path includes the virtual environment's site-packages
         let path: Bound<'_, PyList> = sys.getattr("path")?.extract()?;
-        let venv_site_packages_str = venv_site_packages.to_str().expect("Failed to convert venv path to str");
-        let analyzer_path_str = analyzer_path.to_str().expect("Failed to convert analyzer path to str");
+        let venv_site_packages_str = venv_site_packages
+            .to_str()
+            .expect("Failed to convert venv path to str");
+        let analyzer_path_str = analyzer_path
+            .to_str()
+            .expect("Failed to convert analyzer path to str");
 
         // Print paths for debugging
         println!("Analyzer path: {:?}", analyzer_path_str);
-        println!("Virtual environment site-packages path: {:?}", venv_site_packages_str);
+        println!(
+            "Virtual environment site-packages path: {:?}",
+            venv_site_packages_str
+        );
 
         // Prepend the virtual environment's site-packages to sys.path
-        path.call_method("insert", (0, PyString::new_bound(py, venv_site_packages_str)), None)?;
+        path.call_method(
+            "insert",
+            (0, PyString::new_bound(py, venv_site_packages_str)),
+            None,
+        )?;
 
         // Also add the analyzer path where audio_analyzer.py is located
-        path.call_method("append", (PyString::new_bound(py, analyzer_path_str),), None)?;
+        path.call_method(
+            "append",
+            (PyString::new_bound(py, analyzer_path_str),),
+            None,
+        )?;
 
         // Print updated sys.path for debugging
-        let updated_path: Vec<String> = path.iter()
+        let updated_path: Vec<String> = path
+            .iter()
             .map(|p| p.extract::<String>())
             .collect::<PyResult<Vec<String>>>()?;
         println!("Updated Python path: {:?}", updated_path);
@@ -88,10 +106,6 @@ pub fn analyze_audio(file_path: &str) -> PyResult<(String, f64)> {
         Ok(extracted_result)
     })
 }
-
-
-
-
 
 #[pymodule(name = "audio_analyzer")]
 fn my_rust_module(m: &Bound<'_, PyModule>) -> PyResult<()> {

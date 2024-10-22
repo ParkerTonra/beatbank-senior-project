@@ -1,10 +1,9 @@
 use diesel::result::Error as DieselError;
 
+use chrono::Utc;
 use diesel::prelude::*;
 use dotenvy::dotenv;
 use std::env;
-use chrono::Utc;
-
 
 use crate::models::{Beat, BeatCollection, NewBeat, NewBeatCollection};
 
@@ -18,7 +17,11 @@ pub fn establish_connection() -> SqliteConnection {
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
 
-pub fn add_beat(conn: &mut SqliteConnection, title: &str, file_path: &str) -> Result<Beat, DieselError> {
+pub fn add_beat(
+    conn: &mut SqliteConnection,
+    title: &str,
+    file_path: &str,
+) -> Result<Beat, DieselError> {
     use crate::schema::beats;
 
     let new_beat = NewBeat {
@@ -59,7 +62,7 @@ pub fn new_beat_collection(
     city: Option<&str>,
     state_name: Option<&str>,
     date_played: Option<&str>,
-    date_created: Option<&str>
+    date_created: Option<&str>,
 ) -> Result<BeatCollection, DieselError> {
     use crate::schema::beat_collection;
 
@@ -85,15 +88,25 @@ pub fn delete_beat_collection(conn: &mut SqliteConnection, id: i32) -> Result<()
         .map(|_| ())
 }
 
-pub fn add_beat_to_collection(conn: &mut SqliteConnection, collection_id: i32, beat_id: i32) -> Result<(), DieselError> {
+pub fn add_beat_to_collection(
+    conn: &mut SqliteConnection,
+    collection_id: i32,
+    beat_id: i32,
+) -> Result<(), DieselError> {
     use crate::schema::set_beat;
     diesel::insert_into(set_beat::table)
-        .values((set_beat::dsl::beat_id.eq(beat_id), set_beat::dsl::beat_collection_id.eq(collection_id)))
+        .values((
+            set_beat::dsl::beat_id.eq(beat_id),
+            set_beat::dsl::beat_collection_id.eq(collection_id),
+        ))
         .execute(conn)
         .map(|_| ())
 }
 
-pub fn get_beat_collection(conn: &mut SqliteConnection, id: i32) -> Result<BeatCollection, diesel::result::Error> {
+pub fn get_beat_collection(
+    conn: &mut SqliteConnection,
+    id: i32,
+) -> Result<BeatCollection, diesel::result::Error> {
     use crate::schema::beat_collection;
     beat_collection::table
         .filter(beat_collection::dsl::id.eq(id))
@@ -109,9 +122,12 @@ pub fn get_beat_collection(conn: &mut SqliteConnection, id: i32) -> Result<BeatC
         .first::<BeatCollection>(conn)
 }
 
-pub fn get_beats_in_collection(conn: &mut SqliteConnection, collection_id: i32) -> Result<Vec<Beat>, diesel::result::Error> {
-    use crate::schema::set_beat;
+pub fn get_beats_in_collection(
+    conn: &mut SqliteConnection,
+    collection_id: i32,
+) -> Result<Vec<Beat>, diesel::result::Error> {
     use crate::schema::beats;
+    use crate::schema::set_beat;
     set_beat::table
         .filter(set_beat::dsl::beat_collection_id.eq(collection_id))
         .inner_join(beats::table)

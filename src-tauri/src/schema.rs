@@ -43,8 +43,4 @@ diesel::table! {
 diesel::joinable!(set_beat -> beat_collection (beat_collection_id));
 diesel::joinable!(set_beat -> beats (beat_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    beat_collection,
-    beats,
-    set_beat,
-);
+diesel::allow_tables_to_appear_in_same_query!(beat_collection, beats, set_beat,);
