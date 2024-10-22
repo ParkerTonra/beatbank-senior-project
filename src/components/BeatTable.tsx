@@ -155,60 +155,60 @@ function BeatTable({
 
   return (
     <div className="flex flex-col h-full w-full overflow-y-auto select-none">
-        <table className="w-full mb-96">
-          <thead>
-            {tableInstance.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="relative pr-4 text-left border-gray-800 border-b-4 cursor-pointer mr-2"
-                    style={{
-                      width: header.getSize(),
-                    }}
-                    onClick={() => header.column.toggleSorting()}
-                  >
-                    <div className="flex items-center truncate w-full justify-between">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      <div>
-                        {header.column.getIsSorted() === "asc" ? (
-                          <span>^</span>
-                        ) : header.column.getIsSorted() === "desc" ? (
-                            <span>v</span>
-                          ) :
-                          null
-                        }
-                      </div>
+      <table className="w-full mb-96">
+        <thead>
+          {tableInstance.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th
+                  key={header.id}
+                  className="relative pr-4 text-left border-gray-800 border-b-4 cursor-pointer mr-2"
+                  style={{
+                    width: header.getSize(),
+                  }}
+                  onClick={() => header.column.toggleSorting()}
+                >
+                  <div className="flex items-center truncate w-full justify-between">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    <div>
+                      {header.column.getIsSorted() === "asc" ? (
+                        <span>^</span>
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <span>v</span>
+                      ) :
+                        null
+                      }
                     </div>
+                  </div>
 
-                    {header.column.getCanResize() && (
-                      <div
-                        onMouseDown={header.getResizeHandler()}
-                        onTouchStart={header.getResizeHandler()}
-                        className={`resizer ${header.column.getIsResizing() ? "isResizing" : ""
-                          }`}
-                      />
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-              {tableInstance.getRowModel().rows.map((rowElement) => (
-                <DraggableRow
-                  row={rowElement as Row<Beat>}
-                  key={rowElement.id}
-                  onRowSelection={handleRowSelection}    
-                />
+                  {header.column.getCanResize() && (
+                    <div
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      className={`resizer ${header.column.getIsResizing() ? "isResizing" : ""
+                        }`}
+                    />
+                  )}
+                </th>
               ))}
-          </tbody>
-        </table>
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {tableInstance.getRowModel().rows.map((rowElement) => (
+            <DraggableRow
+              row={rowElement as Row<Beat>}
+              key={rowElement.id}
+              onRowSelection={handleRowSelection}
+            />
+          ))}
+        </tbody>
+      </table>
       <div className="flex px-4 border border-black shadow rounded mt-12 text-sm space-x-4">
         <div className="px-1 border-b border-black ">
           <label>
@@ -248,11 +248,14 @@ function BeatTable({
                 setRowSelection({});
               }}
               onSave={(updatedBeat: EditThisBeat) => {
+                console.log("Saving updated beat...");
                 setIsEditing(false);
                 setSelectedBeat(null);
                 setRowSelection({});
 
-                invoke("update_beat", { beat: updatedBeat })
+                invoke("update_beat", {
+                  beat: updatedBeat
+                })
                   .then((response) => {
                     console.log("Response from update_beat:", response);
                     console.log("Fetching updated data");
