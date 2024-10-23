@@ -16,7 +16,7 @@ CREATE TABLE beats (
     cover_art VARCHAR,
     comments TEXT,
     file_path VARCHAR NOT NULL,
-    bpm INTEGER,
+    bpm DOUBLE,
     musical_key VARCHAR,
     date_created DATETIME NOT NULL DEFAULT current_timestamp
 );

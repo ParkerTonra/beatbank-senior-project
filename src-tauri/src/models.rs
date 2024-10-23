@@ -13,7 +13,6 @@ use the following command in terminal: diesel migration run
 
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
-
 #[derive(Queryable, Selectable, Debug)]
 #[diesel(table_name = crate::schema::beats)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
@@ -32,7 +31,7 @@ pub struct Beat {
     pub cover_art: Option<String>,
     pub comments: Option<String>,
     pub file_path: String,
-    pub bpm: Option<i32>,
+    pub bpm: Option<f64>,
     pub musical_key: Option<String>,
     pub date_created: NaiveDateTime,
 }
@@ -52,7 +51,7 @@ pub struct NewBeat<'a> {
     pub cover_art: Option<&'a str>,
     pub comments: Option<&'a str>,
     pub file_path: &'a str,
-    pub bpm: Option<i32>,
+    pub bpm: Option<f64>,
     pub musical_key: Option<&'a str>,
     pub date_created: NaiveDateTime,
 }
@@ -97,4 +96,15 @@ pub struct NewBeatInCollection<'a> {
 pub struct BeatInCollection {
     pub beat_id: i32,
     pub beat_collection_id: i32,
+}
+
+#[derive(serde::Deserialize)]#[derive(AsChangeset)]
+#[diesel(table_name = crate::schema::beats)]
+pub struct BeatChangeset {
+    pub id: i32,
+    pub title: Option<String>,
+    pub bpm: Option<f64>,
+    pub musical_key: Option<String>,
+    pub duration: Option<i32>,
+    pub artist: Option<String>,
 }

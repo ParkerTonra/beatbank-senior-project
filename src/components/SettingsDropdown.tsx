@@ -2,18 +2,19 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronRight, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api";
 import { Beat, BeatCollection } from "../bindings";
-import EditBeatCard from "./EditBeatCard";
-
+import { message } from "@tauri-apps/api/dialog";
 interface SettingsDropdownProps {
   sets: BeatCollection[];
   handleAddToCollBtnClick: (collectionId: number) => void;
   selectedBeat: Beat | null;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
   sets,
   handleAddToCollBtnClick,
-  selectedBeat
+  selectedBeat,
+  setIsEditing,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
@@ -47,15 +48,26 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
     await invoke("quit_app");
   };
 
+  
+
+  const onEditBeat = () => {
+    setIsEditing(true);
+  };
+
   //opens up EditBeatCard as a popup
-  const handleEditBeat = async () => {
+  async function handleEditBeat() {
     if (!selectedBeat) {
-      console.warn("No beat selected");
+      console.log("No beat selected");
+      message("No beat selected");
       return;
     }
-    return (<EditBeatCard beat={selectedBeat} onClose={() => setIsOpen(false)} onSave={handleEditBeat}
-      
-        />);
+    try {
+      setIsEditing(true);
+      onEditBeat();
+    } catch (error) {
+      console.error("Error editing beat:", error);
+      message("Failed to edit beat. Please try again.");
+    }
   }
 
   return (
