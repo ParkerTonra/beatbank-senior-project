@@ -12,7 +12,7 @@ fn get_venv_python_path() -> PathBuf {
     if cfg!(target_os = "windows") {
         current_dir.join(".venv").join("Scripts").join("python.exe")
     } else {
-        current_dir.join(".venv").join("bin").join("python")
+        current_dir.join(".venv").join("bin").join("python3.12")
     }
 }
 
@@ -25,7 +25,7 @@ fn get_venv_site_packages() -> PathBuf {
         current_dir.join(".venv").join("Lib").join("site-packages")
     } else {
         // For macOS/Linux, the site-packages is under lib directly
-        current_dir.join(".venv").join("lib").join("site-packages")
+        current_dir.join(".venv").join("lib").join("python3.12").join("site-packages")
     }
 }
 

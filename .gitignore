@@ -32,3 +32,5 @@ database.sqlite
 
 .venv
 /src-tauri/src/__pycache__
+src-tauri/src/__pycache__/audio_analyzer.cpython-312.pyc
+.DS_Store
