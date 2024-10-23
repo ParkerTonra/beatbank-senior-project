@@ -6,7 +6,7 @@ import { Beat, BeatCollection } from "./../bindings";
 const defaultColumnVisibility = {
   title: true,
   bpm: true,
-  key: true,
+  musical_key: true,
   duration: true,
   artist: false,
   date_added: false,

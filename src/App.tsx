@@ -17,6 +17,7 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-ki
 import SettingsDropdown from "./components/SettingsDropdown";
 import { HashRouter as Router, Route, Routes } from "react-router-dom";
 import BeatCollTable from "./components/BeatCollection";
+import { listen } from '@tauri-apps/api/event';
 
 function App() {
   const [showSplashScreen, setShowSplashScreen] = useState(true);
@@ -24,12 +25,45 @@ function App() {
   const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null);
   const [theme, setTheme] = useState<string>('light');
   const [settingsPath, setSettingsPath] = useState<string>('');
-
+  const [isFileDragging, setIsFileDragging] = useState(false);
 
   const sensors = useSensors(
     useSensor(MouseSensor),
     useSensor(TouchSensor)
   );
+
+  useEffect(() => {
+    const unlistenDrop = listen('tauri://file-drop', async (event) => {
+      console.log('File dropped:', event.payload); // Logs the file paths or dropped items
+
+      if (Array.isArray(event.payload)) {
+        for (const filePath of event.payload) {
+          try {
+            console.log(`Processing file: ${filePath}`);
+            await invoke('add_beat', { filePath }); // Process the file
+          } catch (error) {
+            console.error(`Error processing file ${filePath}:`, error);
+          }
+        }
+        fetchData(); // Refresh the data after file drop processing
+      }
+      setIsFileDragging(false); // Reset dragging state
+    });
+
+    const unlistenHover = listen('tauri://file-drop-hover', () => {
+      setIsFileDragging(true); // Show file dragging UI
+    });
+
+    const unlistenCancelled = listen('tauri://file-drop-cancelled', () => {
+      setIsFileDragging(false); // Hide file dragging UI when cancelled
+    });
+
+    return () => {
+      unlistenDrop.then((dispose) => dispose());
+      unlistenHover.then((dispose) => dispose());
+      unlistenCancelled.then((dispose) => dispose());
+    };
+  }, []);
 
   const handleAddToCollBtnClick = async (collectionId: number) => {
     if (!selectedBeat) {
@@ -54,16 +88,9 @@ function App() {
 
   const handleDragStart = (event: DragStartEvent) => {
     const activeId = event.active.id.toString();
-
-    // Check if it's a beat being dragged (starts with 'sortable-' or 'beat-')
     if (activeId.startsWith('sortable-') || activeId.startsWith('beat-')) {
-      // Extract the beat ID
       const beatId = parseInt(activeId.replace(/^(sortable-|beat-)/, ''), 10);
-
-      // Find the corresponding beat
       const draggedBeat = beats.find(beat => beat.id === beatId);
-
-      // Set it as the selected beat
       if (draggedBeat) {
         setSelectedBeat(draggedBeat);
       }
@@ -73,10 +100,7 @@ function App() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (!over) {
-      console.log('Dropped outside any droppable area');
-      return;
-    }
+    if (!over) return;
 
     const activeId = active.id.toString();
     const overId = over.id.toString();
@@ -86,14 +110,8 @@ function App() {
       const beatId = parseInt(activeId.replace('beat-', ''), 10);
       handleAddToCollection(collectionId, beatId);
     } else if (activeId.startsWith('sortable-') && overId.startsWith('sortable-')) {
-      // Handle row sorting
-      const activeIndex = beats.findIndex(
-        (beat) => `sortable-${beat.id}` === activeId
-      );
-      const overIndex = beats.findIndex(
-        (beat) => `sortable-${beat.id}` === overId
-      );
-
+      const activeIndex = beats.findIndex((beat) => `sortable-${beat.id}` === activeId);
+      const overIndex = beats.findIndex((beat) => `sortable-${beat.id}` === overId);
       if (activeIndex !== overIndex) {
         const newBeats = arrayMove(beats, activeIndex, overIndex);
         setBeats(newBeats);
@@ -164,10 +182,11 @@ function App() {
           <Sidebar collections={beatCollections} onAddBeatToCollection={handleAddToCollection} />
           <div className="flex-1 flex flex-col overflow-hidden">
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
-              <h1 className="text-3xl font-bold font-guerilla mb-4 py-0">BEATBANK</h1>
+              <>
+                <h1 className="text-3xl font-bold font-guerilla mb-4 py-0">BEATBANK</h1>
               <div className="flex justify-center gap-8">
                 <div className="flex flex-row">
-                  <SettingsDropdown sets={beatCollections} handleAddToCollBtnClick={handleAddToCollBtnClick} selectedBeat={selectedBeat} />
+                  <SettingsDropdown sets={beatCollections} handleAddToCollBtnClick={handleAddToCollBtnClick} selectedBeat={selectedBeat} setIsEditing={setIsEditing} />
                 </div>
 
                 <button onClick={handleThemeChange}>
@@ -208,18 +227,27 @@ function App() {
                   />
                   <Route
                     path="/collection/:id"
-                    element={<BeatCollTable onDragEnd={handleDragEnd}/>}
+                    element={<BeatCollTable onDragEnd={handleDragEnd} />}
                   />
                 </Routes>
 
-              </SortableContext>
+                </SortableContext>
+              </>
+
+              {/* Overlay when dragging files */}
+              {isFileDragging && (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="text-2xl font-bold text-white text-center bg-black bg-opacity-75 p-6 rounded-lg">
+                    Drop files here
+                  </div>
+                </div>
+              )}
             </main>
           </div>
         </div>
         <DragOverlay>{/* Render dragged item */}</DragOverlay>
-
-    </Router>
-    </DndContext>
+      </Router>
+    </DndContext >
   );
 }
 

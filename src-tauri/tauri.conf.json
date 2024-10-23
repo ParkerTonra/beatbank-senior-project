@@ -12,6 +12,9 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "path": {
+        "all": true
+      },
       "dialog": {
         "all": true
       },
@@ -26,7 +29,7 @@
     "windows": [
       {
         "title": "beatbank",
-        "width": 1200,
+        "width": 1280,
         "height": 800
       }
     ],

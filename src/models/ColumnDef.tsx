@@ -7,7 +7,14 @@ interface Row {
   id: string;
   original: Beat;
 }
-// old:
+//format seconds, and integer into MM:SS format (string)
+const formatSecs = (secs?: number): string => {
+  if (secs === undefined || secs === null) return "0:00";
+  const minutes = Math.floor(secs / 60);
+  const seconds = secs % 60;
+  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+};
+
 export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Beat>[] => [
   {
     accessorKey: "drag-handle",
@@ -27,29 +34,30 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
   {
     accessorKey: "title",
     header: "Title",
-    size:260
+    size: 260
   },
   {
     accessorKey: "bpm",
     header: "BPM",
-    size:35,
+    size: 35,
   },
   {
     accessorKey: "musical_key",
     header: "Key",
-    size:35,
+    size: 35,
     enableResizing: false,
   },
   {
     accessorKey: "duration",
     header: "Duration",
-    size:35,
+    size: 35,
+    cell: ({ row }) => formatSecs(row.original.duration),
   },
   {
     accessorKey: "artist",
     header: "Artist",
   },
-  
+
   {
     accessorKey: "date_created",
     header: "Date Added",

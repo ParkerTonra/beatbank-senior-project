@@ -1,24 +1,23 @@
 /*
  * store.rs
- * 
+ *
  * This module manages user settings for the application. It includes functions to
- * load, save, and retrieve the settings file path, ensuring default settings are 
+ * load, save, and retrieve the settings file path, ensuring default settings are
  * created if the settings file doesn't exist.
- * 
+ *
  * Functions:
- * - resolve_project_root_path: Constructs the path for the settings file, ensuring 
+ * - resolve_project_root_path: Constructs the path for the settings file, ensuring
  *   the directory exists.
- * - load_settings: Loads user settings from settings.json or creates the file with 
+ * - load_settings: Loads user settings from settings.json or creates the file with
  *   default settings if it doesn't exist.
  * - save_settings: Saves user settings to settings.json.
  * - get_settings_path: Returns the path to the settings.json file.
- * 
+ *
  */
 
-
-use std::path::PathBuf;
-use std::fs::{self, write, read_to_string};
 use serde::{Deserialize, Serialize};
+use std::fs::{self, read_to_string, write};
+use std::path::PathBuf;
 
 #[derive(Serialize, Deserialize)]
 pub struct Settings {
@@ -37,7 +36,11 @@ impl Default for Settings {
 // Constructs path to settings.json, and creates the directory if necessary.
 // Currently points inside app to easily deal with different operating systems.
 fn resolve_project_root_path(file_name: &str) -> PathBuf {
-    let base_dir = std::env::current_dir().unwrap().parent().unwrap().to_path_buf();
+    let base_dir = std::env::current_dir()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .to_path_buf();
     let settings_path = base_dir.join(file_name);
     if !settings_path.parent().unwrap().exists() {
         fs::create_dir_all(settings_path.parent().unwrap()).expect("Failed to create directory");
@@ -62,7 +65,7 @@ pub async fn load_settings() -> Result<Settings, String> {
         Err(_) => Ok(Settings::default()),
     }
 }
-    
+
 // Saves user settings to settings.json using the settings_path
 #[tauri::command]
 pub async fn save_settings(settings: Settings) -> Result<(), String> {

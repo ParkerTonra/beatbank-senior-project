@@ -27,7 +27,7 @@ diesel::table! {
         cover_art -> Nullable<Text>,
         comments -> Nullable<Text>,
         file_path -> Text,
-        bpm -> Nullable<Integer>,
+        bpm -> Nullable<Double>,
         musical_key -> Nullable<Text>,
         date_created -> Timestamp,
     }
