@@ -3,6 +3,8 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { useState } from 'react';
 import { Beat } from './../bindings';
 import { FileEntry, readDir } from "@tauri-apps/api/fs";
+import { Dialog } from "primereact/dialog";
+import { Tooltip } from 'primereact/tooltip';
 
 interface UploadBeatProps {
   fetchData: () => void;
@@ -12,6 +14,7 @@ interface UploadBeatProps {
 const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [uploadStatus, setUploadStatus] = useState<string>('');
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
 
   const handleFileDelete = async () => {
     if (!selectedBeat) {
@@ -117,31 +120,39 @@ const UploadBeat: React.FC<UploadBeatProps> = ({ fetchData, selectedBeat }) => {
       <div className="w-full flex justify-center gap-5">
         <button onClick={handleFileUpload}>Upload a beat</button>
         <button onClick={handleFolderUpload} className="ml-2">Upload a folder</button>
-        <button onClick={handleFileDelete}className="ml-2">Delete</button>
-        <button onClick={fetchData}className="ml-2">Refresh</button>
+        <button onClick={handleFileDelete} className="ml-2">Delete</button>
+        <button onClick={fetchData} className="ml-2">Refresh</button>
+        {uploadStatus && <button onClick={() => setShowStatusDialog(true)} className="ml-2 absolute right-2 top-2"><span className="pi pi-info-circle"/></button>}
       </div>
-      <div className="max-h-[200px] overflow-y-auto my-4">
-        <div>
-          {selectedFiles.length > 0 && (
-            <div>
-              <p className="font-bold">Selected files:</p>
-              <ul>
-                {selectedFiles.map((file, index) => (
-                  <li key={index}>{file}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+      <Dialog
+        header="Upload Status"
+        visible={showStatusDialog}
+        className="bg-blue-900 w-3/4 h-1/2 p-4 rounded-md border-2 border-black"
+        modal
+        onHide={() => {setShowStatusDialog(false)}}
+      >
+        <div className="overflow-y-auto my-4">
+          <div>
+            {selectedFiles.length > 0 && (
+              <div>
+                <p className="font-bold">Selected files:</p>
+                <ul>
+                  {selectedFiles.map((file, index) => (
+                    <li key={index}>{file}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          <div className="mt-2">
+            {uploadStatus && (
+              <div>
+                <pre>{uploadStatus}</pre>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="mt-2">
-          {uploadStatus && (
-            <div>
-              <p className="font-bold">Upload Status:</p>
-              <pre>{uploadStatus}</pre>
-            </div>
-          )}
-        </div>
-      </div>
+      </Dialog>
     </div>
   );
 };

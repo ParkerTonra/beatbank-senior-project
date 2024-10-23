@@ -3,6 +3,7 @@ import { Beat } from "./bindings";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
 import "./Main.css";
+import 'primeicons/primeicons.css';
 import { SplashScreen } from "./components/SplashScreen";
 import UploadBeat from "./components/UploadBeat";
 import BeatTable from "./components/BeatTable";
@@ -182,7 +183,7 @@ function App() {
           <div className="flex-1 flex flex-col overflow-hidden">
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-600 p-6">
               <>
-              <h1 className="text-3xl font-bold mb-6">Welcome to Beatbank!</h1>
+                <h1 className="text-3xl font-bold font-guerilla mb-4 py-0">BEATBANK</h1>
               <div className="flex justify-center gap-8">
                 <div className="flex flex-row">
                   <SettingsDropdown sets={beatCollections} handleAddToCollBtnClick={handleAddToCollBtnClick} selectedBeat={selectedBeat} setIsEditing={setIsEditing} />
@@ -245,8 +246,7 @@ function App() {
           </div>
         </div>
         <DragOverlay>{/* Render dragged item */}</DragOverlay>
-
-    </Router>
+      </Router>
     </DndContext >
   );
 }
