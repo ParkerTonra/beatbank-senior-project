@@ -12,29 +12,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # Install pnpm first
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 9.10.0
       
-      # Then setup node with pnpm caching
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: 'pnpm'
+
+      # Install build tools
+      - name: Install Visual Studio components
+        run: |
+          choco install visualstudio2022-workload-vctools -y
           
-      # Cache vcpkg
-      - name: Cache vcpkg
-        uses: actions/cache@v3
+      # Install Rust
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
         with:
-          path: |
-            vcpkg
-            C:\Users\runneradmin\AppData\Local\vcpkg\archives
-            C:\Users\runneradmin\AppData\Local\Microsoft\vcpkg
-          key: ${{ runner.os }}-vcpkg-sqlite3
-          
+          toolchain: stable
+          targets: x86_64-pc-windows-msvc
+
       # Cache Rust dependencies
       - name: Cache Rust dependencies
         uses: actions/cache@v3
@@ -46,21 +46,6 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
-          
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-
-      # Install SQLite only if not cached
-      - name: Install SQLite (Windows)
-        run: |
-          git clone https://github.com/Microsoft/vcpkg.git
-          .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg install sqlite3:x64-windows-static
-          .\vcpkg\vcpkg integrate install
-          
-      # Set VCPKG_ROOT environment variable
-      - name: Set VCPKG_ROOT
-        run: echo "VCPKG_ROOT=$env:GITHUB_WORKSPACE\vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       # Cache pnpm dependencies
       - name: Cache pnpm store
@@ -76,10 +61,24 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install
 
+      - name: Set environment variables
+        run: |
+          echo "SQLITE3_STATIC_LIB=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "SQLITE3_NO_PKG_CONFIG=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+          
+      # Debug information
+      - name: Print debug information
+        run: |
+          rustc --version
+          cargo --version
+          echo "Environment variables:"
+          Get-ChildItem env:
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
+          SQLITE3_STATIC_LIB: 1
+          SQLITE3_NO_PKG_CONFIG: 1
         with:
           tagName: app-v__VERSION__
           releaseName: 'App v__VERSION__'

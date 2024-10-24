@@ -1,9 +1,9 @@
 [package]
 name = "beatbank"
-version = "0.1.0"
+version = "0.3.0"
 description = "A Tauri App"
 authors = ["you"]
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -21,6 +21,7 @@ chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
 tokio = { version = "1", features = ["full"] }
 symphonia = { version = "0.5", features = ["mp3", "wav", "flac", "aac"] }
+libsqlite3-sys = { version = "0.26.0", features = ["bundled"] }
 
 [dependencies.pyo3]
 version = "0.22.5"
