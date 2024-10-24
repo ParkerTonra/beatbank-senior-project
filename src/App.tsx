@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Beat } from "./bindings";
+import { Beat, RowOrder } from "./bindings";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
 import "./Main.css";
@@ -9,7 +9,7 @@ import BeatTable from "./components/BeatTable";
 import { SunIcon } from "lucide-react";
 import { useBeats } from "./hooks/useBeats";
 import { loadSettings, saveSettings, getSettingsPath } from './store';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragStartEvent, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { invoke } from "@tauri-apps/api/tauri";
 import { message } from "@tauri-apps/api/dialog";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -96,26 +96,55 @@ function App() {
     }
   };
 
+  
+  
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    const activeId = active.id.toString();
-    const overId = over.id.toString();
-
-    if (overId.startsWith('collection-') && activeId.startsWith('beat-')) {
-      const collectionId = parseInt(overId.replace('collection-', ''), 10);
-      const beatId = parseInt(activeId.replace('beat-', ''), 10);
-      handleAddToCollection(collectionId, beatId);
-    } else if (activeId.startsWith('sortable-') && overId.startsWith('sortable-')) {
-      const activeIndex = beats.findIndex((beat) => `sortable-${beat.id}` === activeId);
-      const overIndex = beats.findIndex((beat) => `sortable-${beat.id}` === overId);
-      if (activeIndex !== overIndex) {
-        const newBeats = arrayMove(beats, activeIndex, overIndex);
-        setBeats(newBeats);
+      const { active, over } = event;
+      if (!over || !active) return;
+  
+      const activeId = active.id.toString();
+      const overId = over.id.toString();
+  
+      if (overId.startsWith('collection-') && activeId.startsWith('beat-')) {
+        const collectionId = parseInt(overId.replace('collection-', ''), 10);
+        const beatId = parseInt(activeId.replace('beat-', ''), 10);
+        handleAddToCollection(collectionId, beatId);
+      } else if (activeId.startsWith('sortable-') && overId.startsWith('sortable-')) {
+        const activeIndex = beats.findIndex((beat) => `sortable-${beat.id}` === activeId);
+        const overIndex = beats.findIndex((beat) => `sortable-${beat.id}` === overId);
+        
+        if (activeIndex === -1 || overIndex === -1) {
+          console.error("Could not find beat indices");
+          return;
+        }
+  
+        if (activeIndex !== overIndex) {
+          const newBeats = arrayMove(beats, activeIndex, overIndex);
+          setBeats(newBeats);
+          saveRowOrder(newBeats);
+          fetchData();
+        }
       }
-    }
+  };
+  
+  const saveRowOrder = async (beatsToSave: Beat[]) => {
+      // Don't try to save if we have no beats
+      if (!beatsToSave.length) return;
+  
+      const rowOrder: RowOrder[] = beatsToSave.map((beat, index) => ({
+        row_id: beat.id,
+        row_number: index + 1
+      }));
+  
+      try {
+        await invoke("save_row_order", { rowOrder });
+        console.log("Row order saved successfully");
+        
+      } catch (error) {
+        // Could add a toast notification here
+        console.error("Error saving row order:", error);
+        setBeats(beats);
+      }
   };
 
   //TODO: audio player
@@ -244,8 +273,6 @@ function App() {
             </main>
           </div>
         </div>
-        <DragOverlay>{/* Render dragged item */}</DragOverlay>
-
     </Router>
     </DndContext >
   );

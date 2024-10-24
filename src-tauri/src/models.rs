@@ -34,6 +34,7 @@ pub struct Beat {
     pub bpm: Option<f64>,
     pub musical_key: Option<String>,
     pub date_created: NaiveDateTime,
+    pub row_order: i32,
 }
 
 #[derive(Insertable)]
@@ -107,4 +108,19 @@ pub struct BeatChangeset {
     pub musical_key: Option<String>,
     pub duration: Option<i32>,
     pub artist: Option<String>,
+    pub genre: Option<String>,
+    pub comments: Option<String>,
+    pub album: Option<String>,
+    pub year: Option<i32>,
+    pub track_number: Option<i32>,
+    pub composer: Option<String>,
+    pub lyricist: Option<String>,
+    pub cover_art: Option<String>,
+    pub file_path: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct RowOrder {
+    pub row_id: i32,
+    pub row_number: i32,
 }

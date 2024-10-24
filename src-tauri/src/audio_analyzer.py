@@ -12,6 +12,11 @@ def analyze(file_path):
 
         # calculate tempo
         tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
+        
+        #round the tempo to two decimal places
+        # 
+        #
+        
         print(f"Estimated Tempo: {tempo} BPM")
 
         # compute chroma (musical note) features using constant-Q transform
@@ -70,6 +75,9 @@ def analyze(file_path):
                      'F#', 'G', 'G#', 'A', 'A#', 'B']
         key = f"{key_names[key_index]} {mode}"
         print(f"Detected Key: {key} with confidence {confidence}")
+        
+        tempo = float(tempo)
+        tempo = round(tempo, 2)
 
         return key, tempo
     except Exception as e:

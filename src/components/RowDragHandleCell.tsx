@@ -1,13 +1,16 @@
+import { DragOverlay } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import GhostRow from './GhostDragRow';
+import { Beat } from '../bindings';
 
 interface RowDragHandleCellProps {
-  rowId: string;
+  row: Beat;
 }
 
-export const RowDragHandleCell: React.FC<RowDragHandleCellProps> = ({ rowId }) => {
+export const RowDragHandleCell: React.FC<RowDragHandleCellProps> = ({ row }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: `sortable-${rowId}`, // Unique ID for sortable handle
+    id: `sortable-${row.id}`, // Unique ID for sortable handle
   });
 
   const style = {
@@ -17,6 +20,7 @@ export const RowDragHandleCell: React.FC<RowDragHandleCellProps> = ({ rowId }) =
   };
 
   return (
+    <>
     <button
       ref={setNodeRef}
       {...attributes}
@@ -26,6 +30,15 @@ export const RowDragHandleCell: React.FC<RowDragHandleCellProps> = ({ rowId }) =
     >
       ≡
     </button>
+    
+      {isDragging && (
+      <DragOverlay>
+        <GhostRow title={row.title} />
+      </DragOverlay>
+    )}
+    </>
+    
+    
   );
 };
 

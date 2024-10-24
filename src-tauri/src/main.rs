@@ -50,6 +50,7 @@ fn fetch_beats(state: State<AppState>) -> Result<String, String> {
     use crate::schema::beats::dsl::*;
 
     beats
+        .order(row_order.asc())
         .load::<Beat>(conn)
         .map_err(|e| e.to_string())
         .and_then(|beats_result| serde_json::to_string(&beats_result).map_err(|e| e.to_string()))
@@ -146,6 +147,13 @@ fn update_beat(beat: BeatChangeset, state: State<AppState>) -> Result<(), String
 
     db::update_beat(conn, beat)
         .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn save_row_order(row_order: Vec<models::RowOrder>, state: State<AppState>) -> Result<(), String> {
+    let mut conn_guard = state.conn.lock().map_err(|e| e.to_string())?;
+    let conn = &mut conn_guard.conn;
+    db::save_row_order(conn, row_order).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -250,6 +258,7 @@ fn main() {
             add_beat_to_collection,
             get_beat_collection,
             get_beats_in_collection,
+            save_row_order,
             store::load_settings,
             store::save_settings,
             store::get_settings_path

@@ -30,6 +30,7 @@ diesel::table! {
         bpm -> Nullable<Double>,
         musical_key -> Nullable<Text>,
         date_created -> Timestamp,
+        row_order -> Integer,
     }
 }
 

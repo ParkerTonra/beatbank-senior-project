@@ -45,9 +45,23 @@ export type EditThisBeat = {
   musical_key?: string;
   duration?: number;
   artist?: string;
+  comments?: string;
+  album?: string;
+  year?: number;
+  track_number?: number;
+  composer?: string;
+  lyricist?: string;
+  cover_art?: string;
+  file_path?: string;
+  genre?: string;
 }
 
 export type BeatInCollection = {
   beat_id: number;
   beat_collection_id: number;
+}
+
+export interface RowOrder {
+  row_id: number;
+  row_number: number;
 }
