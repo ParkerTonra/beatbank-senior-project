@@ -81,10 +81,10 @@ fn get_analyzer_path(handle: &AppHandle) -> Option<PathBuf> {
     handle.path_resolver().resolve_resource("src")
 }
 
-#[tauri::command]
-pub fn analyze_audio(handle: AppHandle, file_path: String) -> Result<(String, f64), String> {
-    analyze_audio_internal(handle, file_path)
-}
+// #[tauri::command]
+// pub fn analyze_audio(handle: AppHandle, file_path: String) -> Result<(String, f64), String> {
+//     analyze_audio_internal(handle, file_path)
+// }
 
 pub fn analyze_audio_internal(handle: AppHandle, file_path: String) -> Result<(String, f64), String> {
     let venv_python_path = get_venv_python_path(&handle).ok_or("Python interpreter not found")?;

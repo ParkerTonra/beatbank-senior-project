@@ -50,8 +50,7 @@
       ],
       "resources": [
         ".venv",
-        "src",
-        "database.sqlite"
+        "src/audio_analyzer.py"
       ]
     }
   }
