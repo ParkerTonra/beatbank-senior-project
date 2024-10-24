@@ -149,6 +149,13 @@ fn update_beat(beat: BeatChangeset, state: State<AppState>) -> Result<(), String
 }
 
 #[tauri::command]
+fn save_row_order(row_order: Vec<models::RowOrder>, state: State<AppState>) -> Result<(), String> {
+    let mut conn_guard = state.conn.lock().map_err(|e| e.to_string())?;
+    let conn = &mut conn_guard.conn;
+    db::save_row_order(conn, row_order).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn new_beat_collection(
     state: State<AppState>,
     set_name: String,
@@ -250,6 +257,7 @@ fn main() {
             add_beat_to_collection,
             get_beat_collection,
             get_beats_in_collection,
+            save_row_order,
             store::load_settings,
             store::save_settings,
             store::get_settings_path

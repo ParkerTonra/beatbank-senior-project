@@ -114,7 +114,21 @@ function App() {
       if (activeIndex !== overIndex) {
         const newBeats = arrayMove(beats, activeIndex, overIndex);
         setBeats(newBeats);
+        saveRowOrder(newBeats);
       }
+    }
+  };
+
+  const saveRowOrder = async (beatsToSave: Beat[]) => {
+    const rowOrder = beatsToSave.map((beat, index) => ({
+      row_id: beat.id.toString(),
+      row_number: index + 1,
+    }));
+    try {
+      await invoke("save_row_order", { rowOrder });
+      console.log("Row order saved successfully");
+    } catch (error) {
+      console.error("Error saving row order:", error);
     }
   };
 
