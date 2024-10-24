@@ -28,6 +28,17 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install SQLite (Windows)
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg install sqlite3:x64-windows-static
+          .\vcpkg\vcpkg integrate install
+          
+      # Set VCPKG_ROOT environment variable
+      - name: Set VCPKG_ROOT
+        run: echo "VCPKG_ROOT=$env:GITHUB_WORKSPACE\vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: install frontend dependencies
         run: pnpm install # change this to npm, pnpm or bun depending on which one you use.
 
