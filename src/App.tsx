@@ -9,7 +9,7 @@ import BeatTable from "./components/BeatTable";
 import { SunIcon } from "lucide-react";
 import { useBeats } from "./hooks/useBeats";
 import { loadSettings, saveSettings, getSettingsPath } from './store';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragStartEvent, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { invoke } from "@tauri-apps/api/tauri";
 import { message } from "@tauri-apps/api/dialog";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -273,8 +273,6 @@ function App() {
             </main>
           </div>
         </div>
-        <DragOverlay>{/* Render dragged item */}</DragOverlay>
-
     </Router>
     </DndContext >
   );

@@ -226,7 +226,6 @@ pub fn save_row_order(conn: &mut SqliteConnection, row_number: Vec<crate::models
 mod tests {
     use super::*;
     use crate::models::RowOrder;
-    use diesel::result::Error as DieselError;
     use diesel::connection::SimpleConnection;
 
     // Helper function to setup an in-memory test database
@@ -297,7 +296,7 @@ mod tests {
         let mut conn = setup_test_db();
         
         // Add one valid beat so we have a real ID to work with
-        let beat1 = add_beat(&mut conn, "Test Beat 1", "path/to/file1").unwrap();
+        let _beat1 = add_beat(&mut conn, "Test Beat 1", "path/to/file1").unwrap();
 
         // Try to save a row order for a non-existent beat
         let row_orders = vec![

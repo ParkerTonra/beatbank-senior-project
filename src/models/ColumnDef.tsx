@@ -22,7 +22,7 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
     cell: ({ row }: { row: Row }) => (
       <div>
         
-        <RowDragHandleCell rowId={row.original.id.toString()} />
+        <RowDragHandleCell row={row.original} />
       </div>
       
     ),
