@@ -38,6 +38,7 @@
       "csp": null
     },
     "bundle": {
+      "externalBin": [],
       "active": true,
       "targets": "all",
       "identifier": "com.beatbank.app",
@@ -51,7 +52,8 @@
       "resources": [
         ".venv",
         "src/audio_analyzer.py",
-        "database.sqlite"
+        "database.sqlite",
+        "python312.dll"
       ]
     }
   }
