@@ -50,6 +50,7 @@ fn fetch_beats(state: State<AppState>) -> Result<String, String> {
     use crate::schema::beats::dsl::*;
 
     beats
+        .order(row_order.asc())
         .load::<Beat>(conn)
         .map_err(|e| e.to_string())
         .and_then(|beats_result| serde_json::to_string(&beats_result).map_err(|e| e.to_string()))

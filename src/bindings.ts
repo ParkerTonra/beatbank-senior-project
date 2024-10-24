@@ -60,3 +60,8 @@ export type BeatInCollection = {
   beat_id: number;
   beat_collection_id: number;
 }
+
+export interface RowOrder {
+  row_id: number;
+  row_number: number;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Beat } from "./bindings";
+import { Beat, RowOrder } from "./bindings";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
 import "./Main.css";
@@ -96,40 +96,55 @@ function App() {
     }
   };
 
+  
+  
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    const activeId = active.id.toString();
-    const overId = over.id.toString();
-
-    if (overId.startsWith('collection-') && activeId.startsWith('beat-')) {
-      const collectionId = parseInt(overId.replace('collection-', ''), 10);
-      const beatId = parseInt(activeId.replace('beat-', ''), 10);
-      handleAddToCollection(collectionId, beatId);
-    } else if (activeId.startsWith('sortable-') && overId.startsWith('sortable-')) {
-      const activeIndex = beats.findIndex((beat) => `sortable-${beat.id}` === activeId);
-      const overIndex = beats.findIndex((beat) => `sortable-${beat.id}` === overId);
-      if (activeIndex !== overIndex) {
-        const newBeats = arrayMove(beats, activeIndex, overIndex);
-        setBeats(newBeats);
-        saveRowOrder(newBeats);
+      const { active, over } = event;
+      if (!over || !active) return;
+  
+      const activeId = active.id.toString();
+      const overId = over.id.toString();
+  
+      if (overId.startsWith('collection-') && activeId.startsWith('beat-')) {
+        const collectionId = parseInt(overId.replace('collection-', ''), 10);
+        const beatId = parseInt(activeId.replace('beat-', ''), 10);
+        handleAddToCollection(collectionId, beatId);
+      } else if (activeId.startsWith('sortable-') && overId.startsWith('sortable-')) {
+        const activeIndex = beats.findIndex((beat) => `sortable-${beat.id}` === activeId);
+        const overIndex = beats.findIndex((beat) => `sortable-${beat.id}` === overId);
+        
+        if (activeIndex === -1 || overIndex === -1) {
+          console.error("Could not find beat indices");
+          return;
+        }
+  
+        if (activeIndex !== overIndex) {
+          const newBeats = arrayMove(beats, activeIndex, overIndex);
+          setBeats(newBeats);
+          saveRowOrder(newBeats);
+          fetchData();
+        }
       }
-    }
   };
-
+  
   const saveRowOrder = async (beatsToSave: Beat[]) => {
-    const rowOrder = beatsToSave.map((beat, index) => ({
-      row_id: beat.id.toString(),
-      row_number: index + 1,
-    }));
-    try {
-      await invoke("save_row_order", { rowOrder });
-      console.log("Row order saved successfully");
-    } catch (error) {
-      console.error("Error saving row order:", error);
-    }
+      // Don't try to save if we have no beats
+      if (!beatsToSave.length) return;
+  
+      const rowOrder: RowOrder[] = beatsToSave.map((beat, index) => ({
+        row_id: beat.id,
+        row_number: index + 1
+      }));
+  
+      try {
+        await invoke("save_row_order", { rowOrder });
+        console.log("Row order saved successfully");
+        
+      } catch (error) {
+        // Could add a toast notification here
+        console.error("Error saving row order:", error);
+        setBeats(beats);
+      }
   };
 
   //TODO: audio player
