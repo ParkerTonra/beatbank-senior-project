@@ -45,6 +45,15 @@ export type EditThisBeat = {
   musical_key?: string;
   duration?: number;
   artist?: string;
+  comments?: string;
+  album?: string;
+  year?: number;
+  track_number?: number;
+  composer?: string;
+  lyricist?: string;
+  cover_art?: string;
+  file_path?: string;
+  genre?: string;
 }
 
 export type BeatInCollection = {

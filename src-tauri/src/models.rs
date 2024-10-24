@@ -107,4 +107,13 @@ pub struct BeatChangeset {
     pub musical_key: Option<String>,
     pub duration: Option<i32>,
     pub artist: Option<String>,
+    pub genre: Option<String>,
+    pub comments: Option<String>,
+    pub album: Option<String>,
+    pub year: Option<i32>,
+    pub track_number: Option<i32>,
+    pub composer: Option<String>,
+    pub lyricist: Option<String>,
+    pub cover_art: Option<String>,
+    pub file_path: Option<String>,
 }
