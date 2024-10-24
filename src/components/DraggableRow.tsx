@@ -1,5 +1,4 @@
 import { useDraggable, DragOverlay } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import { flexRender, Row } from '@tanstack/react-table';
 import { Beat } from '../bindings';
 import GhostRow from './GhostDragRow'; // Import the GhostRow component

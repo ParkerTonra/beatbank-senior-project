@@ -1,114 +1,133 @@
 use pyo3::prelude::*;
-use pyo3::types::{PyAny, PyList, PyModule, PyString, PyTuple};
-use pyo3::wrap_pyfunction;
-use std::env;
+use pyo3::types::{PyList, PyString, PyTuple};
+use tauri::AppHandle;
 use std::path::PathBuf;
 
-fn get_venv_python_path() -> PathBuf {
-    // Get the current directory
-    let current_dir = env::current_dir().expect("Failed to get current directory");
-
-    // Determine the correct Python executable path for the platform
-    if cfg!(target_os = "windows") {
-        current_dir.join(".venv").join("Scripts").join("python.exe")
+fn get_venv_python_path(handle: &AppHandle) -> Option<PathBuf> {
+    let possible_paths = if cfg!(target_os = "windows") {
+        vec![
+            handle
+                .path_resolver()
+                .resolve_resource(".venv/Scripts/python.exe")?,
+            handle
+                .path_resolver()
+                .resolve_resource("python/python.exe")?,
+        ]
     } else {
-        current_dir.join(".venv").join("bin").join("python3.12")
+        vec![
+            handle
+                .path_resolver()
+                .resolve_resource(".venv/bin/python3.12")?,
+            handle
+                .path_resolver()
+                .resolve_resource("python/bin/python3")?,
+            handle
+                .path_resolver()
+                .resolve_resource(".venv/bin/python")?,
+            handle
+                .path_resolver()
+                .resolve_resource("python/bin/python")?,
+        ]
+    };
+
+    for path in possible_paths {
+        if path.exists() {
+            return Some(path);
+        }
     }
+
+    None // Interpreter not found
 }
 
-fn get_venv_site_packages() -> PathBuf {
-    // Get the current directory
-    let current_dir = env::current_dir().expect("Failed to get current directory");
 
-    // Build path to the virtual environment's site-packages directory
-    if cfg!(target_os = "windows") {
-        current_dir.join(".venv").join("Lib").join("site-packages")
+fn get_venv_site_packages(handle: &AppHandle) -> Option<PathBuf> {
+    let possible_paths = if cfg!(target_os = "windows") {
+        vec![
+            handle
+                .path_resolver()
+                .resolve_resource(".venv/Lib/site-packages")?,
+            handle
+                .path_resolver()
+                .resolve_resource("python/Lib/site-packages")?,
+        ]
     } else {
-        // For macOS/Linux, the site-packages is under lib directly
-        current_dir.join(".venv").join("lib").join("python3.12").join("site-packages")
+        vec![
+            handle
+                .path_resolver()
+                .resolve_resource(".venv/lib/python3.12/site-packages")?,
+            handle
+                .path_resolver()
+                .resolve_resource("python/lib/python3.12/site-packages")?,
+            handle
+                .path_resolver()
+                .resolve_resource(".venv/lib/python3.11/site-packages")?,
+            handle
+                .path_resolver()
+                .resolve_resource("python/lib/python3.11/site-packages")?,
+            // Add more versions if necessary
+        ]
+    };
+
+    for path in possible_paths {
+        if path.exists() {
+            return Some(path);
+        }
     }
+
+    None
 }
 
-fn get_analyzer_path() -> PathBuf {
-    // Get the current directory
-    let current_dir = env::current_dir().expect("Failed to get current directory");
-
-    // Build path to the src directory (where the audio_analyzer.py is located)
-    current_dir.join("src")
+fn get_analyzer_path(handle: &AppHandle) -> Option<PathBuf> {
+    handle.path_resolver().resolve_resource("src")
 }
 
-#[pyfunction]
-pub fn analyze_audio(file_path: &str) -> PyResult<(String, f64)> {
-    // Construct the paths outside of the GIL context
-    let venv_python_path = get_venv_python_path();
-    let venv_site_packages = get_venv_site_packages();
-    let analyzer_path = get_analyzer_path();
+#[tauri::command]
+pub fn analyze_audio(handle: AppHandle, file_path: String) -> Result<(String, f64), String> {
+    analyze_audio_internal(handle, file_path)
+}
+
+pub fn analyze_audio_internal(handle: AppHandle, file_path: String) -> Result<(String, f64), String> {
+    let venv_python_path = get_venv_python_path(&handle).ok_or("Python interpreter not found")?;
+    let venv_site_packages = get_venv_site_packages(&handle).ok_or("Site-packages directory not found")?;
+    let analyzer_path = get_analyzer_path(&handle).ok_or("Analyzer path not found")?;
 
     Python::with_gil(|py| {
         // Import the sys module
-        let sys: Bound<'_, PyModule> = py.import_bound("sys")?;
+        let sys = py.import_bound("sys").map_err(|e| e.to_string())?;
 
         // Set the Python executable to the one inside the virtual environment
-        let venv_python_path_str = venv_python_path
-            .to_str()
-            .expect("Failed to convert path to str");
-        println!("Setting Python executable to: {:?}", venv_python_path_str);
-        sys.setattr("executable", venv_python_path_str)?;
+        let venv_python_path_str = venv_python_path.to_str().ok_or("Invalid path")?;
+        sys.setattr("executable", venv_python_path_str).map_err(|e| e.to_string())?;
 
         // Ensure sys.prefix points to the virtual environment
-        sys.setattr("prefix", venv_python_path_str)?;
-        sys.setattr("base_prefix", venv_python_path_str)?;
+        sys.setattr("prefix", venv_python_path_str).map_err(|e| e.to_string())?;
+        sys.setattr("base_prefix", venv_python_path_str).map_err(|e| e.to_string())?;
 
         // Ensure sys.path includes the virtual environment's site-packages
-        let path: Bound<'_, PyList> = sys.getattr("path")?.extract()?;
-        let venv_site_packages_str = venv_site_packages
-            .to_str()
-            .expect("Failed to convert venv path to str");
-        let analyzer_path_str = analyzer_path
-            .to_str()
-            .expect("Failed to convert analyzer path to str");
-
-        // Print paths for debugging
-        println!("Analyzer path: {:?}", analyzer_path_str);
-        println!(
-            "Virtual environment site-packages path: {:?}",
-            venv_site_packages_str
-        );
+        let path: Bound<'_, PyList> = sys.getattr("path").map_err(|e| e.to_string())?.extract().map_err(|e| e.to_string())?;
+        let venv_site_packages_str = venv_site_packages.to_str().ok_or("Invalid path")?;
+        let analyzer_path_str = analyzer_path.to_str().ok_or("Invalid path")?;
 
         // Prepend the virtual environment's site-packages to sys.path
-        path.call_method(
-            "insert",
-            (0, PyString::new_bound(py, venv_site_packages_str)),
-            None,
-        )?;
+        path.insert(0, PyString::new_bound(py, venv_site_packages_str)).map_err(|e| e.to_string())?;
 
         // Also add the analyzer path where audio_analyzer.py is located
-        path.call_method(
-            "append",
-            (PyString::new_bound(py, analyzer_path_str),),
-            None,
-        )?;
-
-        // Print updated sys.path for debugging
-        let updated_path: Vec<String> = path
-            .iter()
-            .map(|p| p.extract::<String>())
-            .collect::<PyResult<Vec<String>>>()?;
-        println!("Updated Python path: {:?}", updated_path);
+        path.append(PyString::new_bound(py, analyzer_path_str)).map_err(|e| e.to_string())?;
 
         // Import the audio_analyzer module and call the analyze method
-        let my_module: Bound<'_, PyModule> = py.import_bound("audio_analyzer")?;
-        let py_file_path: Bound<'_, PyString> = PyString::new_bound(py, file_path);
-        let args = PyTuple::new_bound(py, vec![py_file_path]);
-        let result: Bound<'_, PyAny> = my_module.call_method("analyze", args, None)?;
-        let extracted_result: (String, f64) = result.extract()?;
-        
+        let my_module = py.import_bound("audio_analyzer").map_err(|e| e.to_string())?;
+        let py_file_path = PyString::new_bound(py, &file_path);
+        let args: Bound<'_, PyTuple> = PyTuple::new_bound(py, &[py_file_path]);
+        let result = my_module.call_method1("analyze", args).map_err(|e| e.to_string())?;
+        let extracted_result: (String, f64) = result.extract().map_err(|e| e.to_string())?;
+
         Ok(extracted_result)
     })
 }
 
-#[pymodule(name = "audio_analyzer")]
-fn my_rust_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(analyze_audio, m)?)?;
-    Ok(())
-}
+
+// #[pymodule(name = "audio_analyzer")]
+// fn my_rust_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
+//     m.add_function(wrap_pyfunction!(analyze_audio, m)?)?;
+//     Ok(())
+// }

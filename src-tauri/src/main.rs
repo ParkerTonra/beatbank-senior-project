@@ -8,6 +8,7 @@ mod schema;
 mod store;
 use diesel::prelude::*;
 use serde_json;
+
 use std::{
     env,
     path::Path,
@@ -15,7 +16,7 @@ use std::{
 };
 
 use crate::models::{Beat, BeatCollection};
-use tauri::{Manager, State};
+use tauri::{AppHandle, Manager, State};
 
 struct DatabaseConnection {
     conn: SqliteConnection,
@@ -63,7 +64,7 @@ fn fetch_column_vis() -> String {
 }
 
 #[tauri::command]
-fn add_beat(state: State<AppState>, file_path: String) -> Result<String, String> {
+fn add_beat(state: State<AppState>, file_path: String, handle: AppHandle) -> Result<String, String> {
     let file_name = Path::new(&file_path)
         .file_name()
         .and_then(|name| name.to_str())
@@ -81,17 +82,17 @@ fn add_beat(state: State<AppState>, file_path: String) -> Result<String, String>
     println!("New beat added with id: {}", inserted_beat.id);
 
     // Analyze and update the beat synchronously
-    analyze_and_update_beat(inserted_beat.id, file_path.clone(), conn)?;
+    analyze_and_update_beat(&handle, inserted_beat.id, file_path.clone(), conn)?;
 
     Ok(format!("New beat added with id: {}", inserted_beat.id))
 }
 
 fn analyze_and_update_beat(
+    handle: &AppHandle,
     beat_id: i32, 
     file_path: String, 
     conn: &mut diesel::SqliteConnection // Pass connection as mutable reference
 ) -> Result<(), String> {
-    use crate::audio_analysis::analyze_audio;
 
     println!("Starting analysis for file: {}", file_path);
 
@@ -106,7 +107,7 @@ fn analyze_and_update_beat(
     println!("Connection check passed");
 
     //Call your Python analysis function
-    match analyze_audio(&file_path) {
+    match audio_analysis::analyze_audio_internal(handle.clone(), file_path) {
         Ok((key, tempo)) => {
             println!("Analysis Result: Key: {}, Tempo: {}", key, tempo); // Debug output
             let musical_key_str = key.to_string(); // Ensure key is a String
@@ -230,6 +231,7 @@ fn add_beat_to_collection(
     db::add_beat_to_collection(&mut *conn, collection_id, beat_id).map_err(|e| e.to_string())?;
     Ok(())
 }
+
 
 fn main() {
     println!("Starting beatbank...");
