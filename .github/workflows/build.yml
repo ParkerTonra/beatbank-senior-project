@@ -12,16 +12,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: 'pnpm' # Enable Node modules caching
-          
+      # Install pnpm first
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 9.10.0
+      
+      # Then setup node with pnpm caching
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'pnpm'
           
       # Cache vcpkg
       - name: Cache vcpkg
@@ -60,7 +62,7 @@ jobs:
       - name: Set VCPKG_ROOT
         run: echo "VCPKG_ROOT=$env:GITHUB_WORKSPACE\vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      # Cache pnpm dependencies - fixed version
+      # Cache pnpm dependencies
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
