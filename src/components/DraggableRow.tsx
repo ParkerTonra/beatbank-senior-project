@@ -18,9 +18,10 @@ function DraggableRow({ row, onRowSelection }: DraggableRowProps) {
   });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
-    opacity: isDragging ? 0.8 : 1,
-    zIndex: isDragging ? 1 : 0,
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.7 : 1, // Make the row semi-transparent when dragging
+    backgroundColor: isDragging ? '#f0f0f063' : '', // Highlight the dragged row with a subtle background color
+    
   };
 
   return (

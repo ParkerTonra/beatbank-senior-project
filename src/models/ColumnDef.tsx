@@ -20,7 +20,11 @@ export const createColumnDef = (onBeatPlay: (beat: Beat) => void): ColumnDef<Bea
     accessorKey: "drag-handle",
     header: "",
     cell: ({ row }: { row: Row }) => (
-      <RowDragHandleCell rowId={row.original.id.toString()} />
+      <div>
+        
+        <RowDragHandleCell rowId={row.original.id.toString()} />
+      </div>
+      
     ),
     size: 35,
     enableHiding: false,
