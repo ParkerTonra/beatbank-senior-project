@@ -3,7 +3,7 @@ name = "beatbank"
 version = "0.3.0"
 description = "A Tauri App"
 authors = ["you"]
-edition = "2024"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
