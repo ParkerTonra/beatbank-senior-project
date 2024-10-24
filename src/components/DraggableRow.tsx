@@ -10,7 +10,7 @@ interface DraggableRowProps {
 }
 
 function DraggableRow({ row, onRowSelection }: DraggableRowProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `beat-${row.original.id}`,
     data: {
       type: 'beat',
@@ -18,17 +18,11 @@ function DraggableRow({ row, onRowSelection }: DraggableRowProps) {
     },
   });
 
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.7 : 1,
-    zIndex: isDragging ? 10 : 0,
-  };
 
   return (
     <>
       <tr
         ref={setNodeRef}
-        //style={style}
         {...attributes}
         {...listeners}
         onClick={() => onRowSelection(row.original)}
